@@ -7,17 +7,12 @@ Created on 22 Jul 2011
 """
 
 import sys
-import pdb
-from pprint import pprint
 
 # 3rd party modules
 import StructGen
 from Bio import SeqIO
-
-
 class InvalidConstraintError(Exception):
     pass
-
 
 def parse_fasta(fasta_f):
     """
@@ -30,7 +25,6 @@ def parse_fasta(fasta_f):
             else:
                 constraint = seq_record.id
             yield str(seq_record.seq), constraint
-
 
 def process_constraints(fasta_f):
     """
@@ -76,7 +70,6 @@ def process_constraints(fasta_f):
         else:
             raise InvalidConstraintError(error_string % (sequence, constraint))
 
-
 def main(fasta_f, out_f="out.sdf"):
     """
     Writes the sequences (with constraints) in fasta_f to a 3d SDF file, out_f.
@@ -90,4 +83,10 @@ def main(fasta_f, out_f="out.sdf"):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:])
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate peptides from a fasta file.")
+    parser.add_argument("fasta_f", help="Fasta file of peptides.")
+    parser.add_argument("--out_f", help="Output file.", default="out.sdf")
+    args = parser.parse_args()
+    
+    main(args.fasta_f, args.out_f)

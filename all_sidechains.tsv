@@ -1,0 +1,231 @@
+L-Code	Name	D-Code	D-code-PDB	Molecular_weight	LogP	Sidechain_logP	Volume	Sidechain_volume	pKa	SMILES	Fixed SMILES	Pubchem#	D-Pubchem#	CAS	D-CAS	family	natural
+ALA	Alanine	DAL	DAL	90.1	-2.85	1.09	107.08	21.42	2.35_9.87	[NH3][C@@H](C)C(=O)O	[NH3][C@@H](C)C(=O)O	5950	71080	56-41-7	338-69-2	alanine	natural
+ARG	Arginine	DAR	DAR	176.22	-4.2	-0.05_(predicted)	204.07	118.41	2.01_9.04_12.48	[NH3][C@@H](CCCNC(=[NH2])N)C(=O)O	[NH3][C@@H](CCCNC(=[NH2])N)C(=O)O	6322	71070	74-79-3	157-06-2	arginine	natural
+ASN	Aspargine	DSG	DSG	133.13	-3.82	-1.26	142.64	56.97	2.02_8.8	[NH3][C@@H](CC(=O)N)C(=O)O	[NH3][C@@H](CC(=O)N)C(=O)O	6267	439600	70-47-3	2058-58-4	asparagine	natural
+ASP	Aspartate	DAS	DAS	134.11	-3.68	-0.17	137.99	52.33	2.1_9.82_3.9	[NH3][C@@H](CC(=O)O)C(=O)O	[NH3][C@@H](CC(=O)O)C(=O)O	5960	83887	56-84-8	1783-96-6	aspartic	natural
+CYS	Cysteine	DCY	DCY	122.17	-2.5	0.51_(predicted)	126.7	41.04	2.05_10.25_10.78	[NH3][C@@H](CS)C(=O)O	[NH3][C@@H](CS)C(=O)O	5862	92851	52-90-4	921-01-7	cysteine	natural
+GLN	Glutamine	DGN	DGN	147.15	-3.15	-0.66	163.84	78.17	2.17_9.13	[NH3][C@@H](CCC(=O)N)C(=O)O	[NH3][C@@H](CCC(=O)N)C(=O)O	5961	145815	56-85-9	5959-95-5	asparagine	natural
+GLU	Glutamate	DGL	DGL	148.14	-3.66	0.33	160.14	74.48	2.1_9.47_4.07	[NH3][C@@H](CCC(=O)O)C(=O)O	[NH3][C@@H](CCC(=O)O)C(=O)O	33032	23327	56-86-0	6893-26-1	aspartic	natural
+GLY	Glycine		NA	75.07	-3.21	0	85.66	0	2.35_9.78	NCC(=O)O	NCC(=O)O	750	750	56-40-6	56-40-6	other	natural
+HIS	Histidine	DHI	DHI	156.16	-2.52	0.23	168.04	82.38	1.77_9.18_6.1	[NH3][C@@H](Cc1c[nH]cn1)C(=O)O	[NH3][C@@H](Cc1c[nH]cn1)C(=O)O	6274	71083	71-00-1	351-50-8	histidine	natural
+ILE	Isoleucine	DIL	DIL	132.18	-1.76	2.89	171.4	85.73	2.23_9.76	[NH3][C@@H]([C@H](CC)C)C(=O)O	[NH3][C@@H]([C@H](CC)C)C(=O)O	6306	76551	73-32-5	319-78-8	alanine	natural
+LEU	Leucine	DLE	DLE	132.18	-1.74	2.76	171.89	86.22	2.33_9.74	[NH3][C@@H](CC(C)C)C(=O)O	[NH3][C@@H](CC(C)C)C(=O)O	6106	439524	61-90-5	328-38-1	alanine	natural
+LYS	Lysine	DLY	DLY	148.2	-3.05	0.86	185.41	99.75	2.18_8.95_10.53	[NH3][C@@H](CCCC[NH3])C(=O)O	[NH3][C@@H](CCCC[NH3])C(=O)O	5962	57449	56-87-1	923-27-3	lysine	natural
+MET	Methionine	MED	MED	150.22	-2	1.54	175.07	89.4	2.28_9.21	[NH3][C@@H](CCSC)C(=O)O	[NH3][C@@H](CCSC)C(=O)O	6137	84815	63-68-3	348-67-4	methionine	natural
+PHE	Phenylalanine	DPN	DPN	166.2	-1.52	2.73	199.86	114.2	2.58_9.24	[NH3][C@@H](Cc1ccccc1)C(=O)O	[NH3][C@@H](Cc1ccccc1)C(=O)O	6140	71567	63-91-2	673-06-3	phenylalanine	natural
+PRO	Proline	DPR	DPR	116.14	-2.54	2.36	143.4	57.74	2_10.6	[NH2]1[C@H](C(=O)O)CCC1	[NH2]1[C@H](C(=O)O)CCC1	145742	8988	147-85-3	344-25-2	other	natural
+SER	Serine	DSN	DSN	106.1	-3.33	-0.74	117.37	31.71	2.21_9.15	[NH3][C@@H](CO)C(=O)O	[NH3][C@@H](CO)C(=O)O	5951	71077	56-45-1	312-84-5	serine	natural
+THR	Threonine	DTH	DTH	120.13	-2.98	-0.3	137.26	51.59	2.09_9.1	[NH3][C@@H]([C@@H](C)O)C(=O)O	[NH3][C@@H]([C@@H](C)O)C(=O)O	6288	69435	72-19-5	632-20-2	serine	natural
+TRP	Tryptophan	DTR	DTR	205.23	-1.06	2.6	233.78	148.12	2.38_9.39	[NH3][C@@H](Cc1c[nH]c2c1cccc2)C(=O)O	[NH3][C@@H](Cc1c[nH]c2c1cccc2)C(=O)O	6305	9060	73-22-3	153-94-6	tryptophan	natural
+TYR	Tyrosine	DTY	DTY	182.2	-2.26	1.97	208.29	122.63	2.2_9.11_10.07	[NH3][C@@H](Cc1ccc(cc1)O)C(=O)O	[NH3][C@@H](Cc1ccc(cc1)O)C(=O)O	6057	71098	60-18-4	556-02-5	phenylalanine	natural
+VAL	Valine	DVA	DVA	118.15	-2.26	2.36	149.25	63.59	2.29_9.27	[NH3][C@@H](C(C)C)C(=O)O	[NH3][C@@H](C(C)C)C(=O)O	6287	71563	72-18-4	640-68-6	alanine	natural
+4	Phenylglycine	D004	PG9	152.17	-1.7	2.13	174.8	89.14	2.23_8.85_(predicted)	[NH3][C@@H](c1ccccc1)C(=O)O	[NH3][C@@H](c1ccccc1)C(=O)O	99291	70134	2935-35-5	875-74-1	phenylglycine	non-natural
+0A1	4-methoxy-Phenylalanine	D0A1	NA	196.22	-1.44_(predicted)	2.81	229.12	143.45	2.23_9.44_(predicted)	COc1ccc(cc1)C[C@@H](C(=O)O)[NH3]		2723935	6950205	6230-11-1	39878-65-4	phenylalanine	non-natural
+0AF	7-hydroxy-l-tryptophan	D0AF	NA	220.22	-0.75_(predicted)	2.06_(predicted)	238.99	153.33	2.23_9.2_9.67_(predicted)	[NH3][C@H]([C](=O)=O)Cc1c[nH]c2c1cccc2O		439280	199528	314062-44-7	4350-07-6	tryptophan	non-natural
+0BN	4-carbamimidoyl-l-phenylalanine	D0BN	NA	209.25	-2.44_(predicted)	1.25_(predicted)	235.28	149.62	2.15_9.43_11.5_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)[C](=[NH2])=[NH2]		3040681		52820-75-4		phenylalanine	non-natural
+200	4-chloro-Phenylalanine	D200	NA	199.63	-0.48	3.33	213.84	128.17	1.85_9.44_(predicted)	[NH3][C@H]([C](=O)=O)Cc1ccc(cc1)Cl		736190	667429	14173-39-8	14091-08-8	phenylalanine	non-natural
+26P	2-amino-6-oxopimelic acid	D26P	NA	189.17	-1.20_(predicted)	1.38_(predicted)	205.31	119.65	1.77_9.33_3.08_(predicted)	OC(=O)[C@H](CCC[C](=[C](=O)=O)=O)[NH3]		194695		75650-93-0		aspartic	non-natural
+2AG	2-Allyl-glycine	D2AG	NA	116.14	-2.26_(predicted)	1.77	141.88	56.22	2.3_9.6	[NH3][C@H](C(=O)O)CC=C		167529	6992334	16338-48-0	54594-06-8	alanine	non-natural
+2AS	3-methyl-aspartic acid	D2AS	NA	147.13	-2.41_(predicted)	0.33	155.96	70.29	1.87_9.68_3.55_(predicted)	OC(=O)[C@H]([C@@H]([C](=O)=O)C)[NH3]		852	852	6667-60-3	6667-60-3	aspartic	non-natural
+2FM	s-(difluoromethyl)-homocysteine	D2FM	NA	186.2	-1.41_(predicted)	2.19_(predicted)	188.28	102.61	1.95_9.5_(predicted)	FC(SCC[C@@H](C(=O)O)[NH3])F						methionine	non-natural
+2HF	2-fluoro-l-histidine	D2HF	NA	175.16	-2.62_(predicted)	1.23_(predicted)	170.57	84.91	0.79_9.32_1.74_8.75_(predicted)	[NH3][C@H](C(=O)O)C[C@@H]1CN[C@@H](N1)F		6613474		50444-78-5		histidine	non-natural
+2HF1	2-fluoro-l-histidine	D2H1	NA	174.15	-2.80_(predicted)	0.90_(predicted)	179.01	93.35	0.8_9.49_8.67_2.14_(predicted)	[NH3][C@H](C(=O)O)Cc1cnc([nH]1)F		6613474		50444-78-5		histidine	non-natural
+2HF2	2-fluoro-l-histidine	D2H2	NA	174.15	-2.80_(predicted)	0.90_(predicted)	179	93.34	0.79_9.32_1.74_8.75_(predicted)	[NH3][C@H](C(=O)O)Cc1c[nH]c(n1)F		6613474		50444-78-5		histidine	non-natural
+2NP	l-2-amino-6-methylene-pimelic acid	D2NP	NA	187.19	-0.68_(predicted)	3.28_(predicted)	218.01	132.34	2.16_9.53_4.53_(predicted)	OC(=O)[C@H](CCC[C](=[C](=O)=O)=C)[NH3]						aspartic	non-natural
+32T	3-(4H-thieno[3,2-b]pyrrol-6-yl)-L-alanine	D32T	NA	210.25	-0.63_(predicted)	2.18_(predicted)	220.9	135.24	2.74_9.37_(predicted)	O=[C](=O)[C@H](Cc1c[nH]c2c1scc2)[NH3]						tryptophan	non-natural
+3CF	3-cyano-phenylalanine	D3CF	NA	191.21	-1.69_(predicted)	2.01_(predicted)	218.68	133.02	1.52_0.42_(predicted)	N#Cc1cccc(c1)C[C@@H](C(=O)O)[NH3]		2734509	7009411	57213-48-6	263396-43-6	phenylalanine	non-natural
+3FG	(2s)-amino(3,5-dihydroxyphenyl)-ethanoic acid	D3FG	NA	184.17	-2.41_(predicted)	0.8	191.73	106.07	1.37_8.01_8.78_10.82_(predicted)	OC(=O)[C@H](c1cc(O)cc(c1)O)[NH3]		443586		162870-29-3		phenylglycine	non-natural
+3GL	4-hydroxy-glutamic-acid	D3GL	NA	163.13	-3.18_(predicted)	-0.72	167.87	82.21	1.68_9.16_3.5-(COO-)_(predicted)	OC(=O)[C@H](C[C@@H]([C](=O)=O)O)[NH3]				56614-13-2		aspartic	non-natural
+3MY	3-Chloro-tyrosine	D3MY	3MY	216.64	-1.14_(predicted)	2.56_(predicted)	224.29	138.63	1.56_9.47_7.84_(predicted)	OC(=O)[C@H](Cc1ccc(c(c1)Cl)O)[NH3]		110992		7423-93-0	35608-63-0	phenylalanine	non-natural
+4BF	4-Bromo-phenylalanine	D4BF	NA	245.09	-0.72_(predicted)	3.42	225.92	140.26	1.81_9.44_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)Br		671214	671215	24250-84-8	62561-74-4	phenylalanine	non-natural
+4CF	4-cyano-phenylalanine	D4CF	NA	191.21	-1.69_(predicted)	2.01_(predicted)	218.69	133.03	1.52_9.42_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)C#N				104531-20-6	167479-78-9	phenylalanine	non-natural
+4CY	nitrilo-l-methionine	D4CY	NA	161.2	-2.31_(predicted)	1.29_(predicted)	174.3	88.64	1.34_9.5_(predicted)	N#CSCC[C@@H](C(=O)O)[NH3]						methionine	non-natural
+4FW	4-fluoro-tryptophan	D4FW	NA	223.22	-1.07	2.51_(predicted)	236.48	150.82	2.18_9.36_(predicted)	OC(=O)[C@H](Cc1c[nH]c2c1c(F)ccc2)[NH3]				25631-17-8	110221-04-0	tryptophan	non-natural
+4HMP	4-hydroxymethyl-phenylalanine	D4HZ	NA	196.22	-2.29_(predicted)	1.58	229.11	143.45	2.23_9.44_(predicted)	OCc1ccc(cc1)C[C@@H](C(=O)O)[NH3]		193505		15742-88-8	15720-17-9	phenylalanine	non-natural
+4HT	4-hydroxy-tryptophan	D4HT	NA	220.22	-0.75_(predicted)	2.06_(predicted)	239.24	153.57	2.2_9.61_9.34_(predicted)	O=[C](=O)[C@H](Cc1c[nH]c2c1c(O)ccc2)[NH3]				25242-90-4		tryptophan	non-natural
+4IN	4-amino-l-tryptophan	D4IN	NA	220.25	-1.96_(predicted)	1.73_(predicted)	240.13	154.47	1.84_9.4_3.24_(predicted)	OC(=O)[C@H](Cc1c[nH]c2c1c(N)ccc2)[NH3]				540770-50-1		tryptophan	non-natural
+4PH	4-methyl-phenylalanine	D4PH	NA	180.22	-1.04_(predicted)	3.15	219.58	133.92	2.58_9.47_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)C		151513	7015862	1991-87-3	49759-61-7	phenylalanine	non-natural
+6CL	6-carboxylysine	D6CL	NA	191.21	-5.00_(predicted)	-1.86	215.67	130	1.85_9.83_9.65_2.42_(predicted)	[NH3][C@H](C(=O)O)CCC[C@H]([C](=O)=O)[NH3]						aspartic	non-natural
+6CW	6-chloro-l-tryptophan	D6CW	NA	238.67	0.23_(predicted)	3.04_(predicted)	247.22	161.56	2.1_9.4_(predicted)	O=[C](=O)[C@H](Cc1c[nH]c2c1ccc(c2)Cl)[NH3]		10062693		33468-35-8	56632-86-1	tryptophan	non-natural
+AA4	2-amino-5-hydroxypentanoic acid	DAA4	NA	134.15	-3.34_(predicted)	0.25	159.95	74.28	2.36_9.22_(predicted)	OCCC[C@@H](C(=O)O)[NH3]				6152-89-2		serine	non-natural
+ABA	2-Aminobutyric acid	DABA	DBB	103.12	-2.53	1.81	126.36	40.69	2.62_9.53_(predicted)	CC[C@@H]([C](=O)=O)[NH3]		80283	439691	1492-24-6	2623-91-8	alanine	non-natural
+ACZ	cis-amiclenomycin	DACZ	NA	198.26	-2.28_(predicted)	1.67_(predicted)	240.86	155.19	2.63_9.74_9.51_(predicted)	[NH3][C@H](C(=O)O)CC[C@@H]1C=C[C@@H](C=C1)[NH3]		99594		53696-70-1	53696-70-1	alanine	non-natural
+ADAM	Adamanthane	DADM	NA	223.31	1.33_(predicted)	4.22_(predicted)	279.98	194.32	2.58_9.51_(predicted)	[NH3][C@H]([C](=O)=O)C[C@]12C[C@H]3C[C@@H](C2)C[C@@H](C1)C3						alanine	non-natural
+AGM	5-methyl-arginine	DAGM	NA	190.24	-0.79_(predicted)	0.38_(predicted)	222.52	136.86	2.48_9.12_12.39_(predicted)	C[C@H]([NH]=[C](=[NH2])=[NH2])CC[C@@H](C(=O)O)[NH3]						arginine	non-natural
+AHB	beta-hydroxyasparagine	DAHB	NA	149.12	-5.07_(predicted)	-1.51_(predicted)	149.18	63.52	1.8_7.89_12.64-(COH)_(predicted)	OC(=O)[C@H]([C@@H](C(=O)N)O)[NH3]						asparagine	non-natural
+AHP	2-Aminoheptanoic acid	DAHP	NA	146.21	-1.03_(predicted)	3.39	193.71	108.04	2.85_9.53_(predicted)	CCCCC[C@@H](C(=O)O)[NH3]				1115-90-8	1115-90-8	alanine	non-natural
+ALC	3-cyclohexyl-alanine	DALC	ZAL	172.25	-0.58	3.88	222.48	136.82	2.73_9.52_(predicted)	[NH3][C@H](C(=O)O)CC1CCCCC1		712421	736026	27527-05-5	58717-02-5	alanine	non-natural
+ALN	1-Naphthyl-alanine	DALN	NA	215.25	-0.22	3.87	251.3	165.63	2.61_9.42_(predicted)	O=[C](=O)[C@H](Cc1cccc2c1cccc2)[NH3]		2724883		55516-54-6	78306-92-0	phenylalanine	non-natural
+ALO	Allo-threonine	DALO	2TL	119.12	-2.98	-0.3	137.59	51.92	2.23_0.99_(predicted)	[NH3][C@H](C(=O)O)[C@H](C)O		99289	90624	28954-12-3	24830-94-2	serine	non-natural
+ANTH	3-(9-anthryl)-alanine	DNTL	NA	266.31	1.09_(predicted)	5.07	306.92	221.26	2.73_9.38_(predicted)	OC(=O)[C@H](Cc1c2ccccc2cc2c1cccc2)[NH3]				100896-08-0		phenylalanine	non-natural
+APD	3-Methyl-phenylalanine	DAPD	NA	180.22	-1.04_(predicted)	3.2	219.56	133.9	2.58_9.45_(predicted)	OC(=O)[C@H](Cc1cccc(c1)C)[NH3]		2761494		114926-37-3		phenylalanine	non-natural
+APM	m-amidinophenyl-3-alanine	DAPM	NA	209.25	-0.82_(predicted)	1.25_(predicted)	235.25	149.58	2.15_9.41_11.46_(predicted)	OC(=O)[C@H](Cc1cccc(c1)[C](=[NH2])=[NH2])[NH3]						phenylalanine	non-natural
+ARO	c-gamma-hydroxy arginine	DARO	NA	192.22	-2.16_(predicted)	-1.19_(predicted)	210.69	125.03	2.2_8.75_12.11_(predicted)	O[C@H](C[C@@H](C(=O)O)[NH3])C[NH]=[C](=[NH2])=[NH2]				61370-10-3		arginine	non-natural
+AS2	(2r)-2-amino-4-oxobutanoic acid	DAS2	AS2	117.1	-3.05_(predicted)	0.45	130.36	44.7	1.95_8.98_(predicted)	O=CC[C@@H]([C](=O)=O)[NH3]				15106-57-7	15106-57-7	other	non-natural
+AZDA	azido-alanine	DZDA	NA	131.11	-1.58_(predicted)	2.11_(predicted)	139.29	53.63	1.66_8.94_4.27_(predicted)	[NH3][C@H]([C](=O)=O)CN=[N]=N		55785	55785	105661-40-3	105661-40-3	other	non-natural
+BB8	Phenylserine	DBB8	NA	182.2	-2.52_(predicted)	1.05	205.4	119.74	2.16_8.88_(predicted)	O[C@H]([C@@H](C(=O)O)[NH3])c1ccccc1		73562	672406	32946-42-2	109120-55-0	phenylalanine	non-natural
+BCS	benzylcysteine	DBCS	NA	212.29	-1.22_(predicted)	2.37_(predicted)	243.78	158.12	2.42_9.14_(predicted)	[NH3][C@H](C(=O)O)CSCc1ccccc1		193613		3054-01-1	23032-53-3	phenylalanine	non-natural
+BHD	beta-hydroxyaspartic acid	DBHD	NA	148.09	-2.65_(predicted)	-1.11	144.23	58.57	2.57_9.08_2.8-(COO-)_(predicted)	O=[C](=O)[C@H]([C@@H]([C](=O)=O)[NH3])O				7298-99-9		aspartic	non-natural
+BIF	4,4-biphenylalanine	DBIF	NA	242.29	0.22_(predicted)	4.63	289.66	204	2.49_9.44_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)c1ccccc1		2761815		155760-02-4	170080-13-4	phenylalanine	non-natural
+BIU	5-bromo-l-isoleucine	DBIU	NA	211.08	-1.45_(predicted)	2.75	196.65	110.99	2.26_9.56_(predicted)	C[C@H]([C@@H](C(=O)O)[NH3])CCBr						alanine	non-natural
+BTH3	3-(3-benzothienyl)-alanine	DTH9	NA	221.28	0.49_(predicted)	3.30_(predicted)	239.68	154.02	2.36_9.34_(predicted)	O=[C](=O)[C@H](Cc1csc2c1cccc2)[NH3]				72120-71-9	111139-55-0	tryptophan	non-natural
+BTR	6-bromo-tryptophan	DBTR	NA	284.13	-0.59_(predicted)	3.10_(predicted)	258.06	172.4	2.04_9.4_(predicted)	OC(=O)[C@H](Cc1c[nH]c2c1ccc(c2)Br)[NH3]				52448-17-6	496930-10-0	tryptophan	non-natural
+BUG	Tertleucine	DBUG	NA	132.18	-1.77	2.76	166.25	80.58	2.79_9.32_(predicted)	[NH3][C@@H](C(C)(C)C)C(=O)O	[NH3][C@@H](C(C)(C)C)C(=O)O	164608	6950340	20859-02-3	26782-71-8	alanine	non-natural
+C2N	3-chloro-l-alanine	DC2N	C2N	123.54	-1.89_(predicted)	0.91	123.21	37.55	1.7_8.52_(predicted)	ClC[C@@H]([C](=O)=O)[NH3]		439772		2731-73-9	39217-38-4	alanine	non-natural
+CAN	canaline	DCAN	NA	135.14	-3.90_(predicted)	-0.30_(predicted)	152.27	66.6	2.24_9.46_4.4-(NH2)_(predicted)	[NH3][C@H](C(=O)O)CCON		441443		496-93-5	128395-79-9	other	non-natural
+CCS	carboxymethylated cysteine	DCCS	NA	179.19	-2.24_(predicted)	1.35_(predicted)	183.74	98.08	1.84_9.14_4.05_(predicted)	O=[C](=O)CSC[C@@H](C(=O)O)[NH3]		193653	6452242	638-23-3	50698-76-5	aspartic	non-natural
+CHG	Cyclohexylglycine	DCHG	NA	158.22	-0.9	3.44	201.13	115.47	2.67_9.58_(predicted)	[NH3][C@H](C(=O)O)C1CCCCC1		736848	736849	14328-51-9	14328-52-0	alanine	non-natural
+CHP	3-chloro-4-hydroxy-phenylglycine	DCHP	NA	202.62	-1.43_(predicted)	2.15	198.79	113.13	1.28_8.85_7.82_(predicted)	OC(=O)[C@H](c1ccc(c(c1)Cl)O)[NH3]						phenylglycine	non-natural
+CIR	Citrulline	DCIR	NA	175.19	-3.19	-0.14_(predicted)	198.96	113.3	2.27_9.23_(predicted)	OC(=O)[C@H](CCC[NH]=[C](=O)=[NH2])[NH3]		9750	637599	372-75-8	13594-51-9	arginine	non-natural
+CNP2	2-cyano-phenylalanine	D2CF	NA	191.21	-1.69_(predicted)	2.21	218.05	132.39	1.53_9.35_(predicted)	N#Cc1ccccc1C[C@@H](C(=O)O)[NH3]		2761502		263396-42-5	263396-41-4	phenylalanine	non-natural
+CP24	2,4-dichloro-phenylalanine	D24E	NA	235.09	-0.15_(predicted)	4.24	228.93	143.26	1.46_9.36_(predicted)	OC(=O)[C@H](Cc1ccc(cc1Cl)Cl)[NH3]		2761497	6993648	111119-36-9	114872-98-9	phenylalanine	non-natural
+CP34	3,4-dichloro-phenylalanine	D34E	NA	235.09	-0.15_(predicted)	3.95	229.65	143.98	1.45_9.42_(predicted)	OC(=O)[C@H](Cc1ccc(c(c1)Cl)Cl)[NH3]		2761498		52794-99-7	52794-98-6	phenylalanine	non-natural
+CPA3	3-Cyclopentyl-alanine	DCPE	NA	157.21	0.07_(predicted)	3.37	202.67	117.01	2.67_9.52_(predicted)	[NH3][C@H]([C](=O)=O)CC1CCCC1						alanine	non-natural
+CPG2	2-Chloro-phenylglycine	DCG6	NA	185.61	-0.19_(predicted)	2.84	189.86	104.2	1.57_8.87_(predicted)	O=[C](=O)[C@H](c1ccccc1Cl)[NH3]				141315-50-6	86169-24-6	phenylglycine	non-natural
+CPG3	3-Chloro-phenylglycine	DCG5	NA	186.62	-1.08_(predicted)	2.84	190.74	105.08	1.57_8.74_(predicted)	OC(=O)[C@H](c1cccc(c1)Cl)[NH3]						phenylglycine	non-natural
+CPG4	4-Chloro-phenylglycine	DCGD	NA	186.62	-1.08_(predicted)	2.84	190.76	105.1	1.56_8.79_(predicted)	[NH3][C@@H](c1ccc(cc1)Cl)C(=O)O	[NH3][C@@H](c1ccc(cc1)Cl)C(=O)O					phenylglycine	non-natural
+CPH2	2-chloro-Phenylalanine	DCF6	NA	200.64	-0.78_(predicted)	3.42	212.81	127.14	1.86_9.37_(predicted)	OC(=O)[C@H](Cc1ccccc1Cl)[NH3]		2761491		103616-89-3	80126-50-7	phenylalanine	non-natural
+CSA	s-acetonylcysteine	DCSA	NA	178.23	-2.96_(predicted)	0.63_(predicted)	198.53	112.86	2.16_8.93_(predicted)	CC(=O)CSC[C@@H](C(=O)O)[NH3]						other	non-natural
+CSE	Selenocysteine	DCSE	NA	168.05	-2.91_(predicted)	0.68_(predicted)	137.7	52.04	1.27_8.42_(predicted)	[NH3][C@H]([C](=O)=O)C[SeH]				10236-58-5		cysteine	non-natural
+CTE	7-chloro-tryptophan	DCTE	DTE	238.67	0.23_(predicted)	3.04_(predicted)	246.42	160.76	2.15_9.4_(predicted)	[NH3][C@H]([C](=O)=O)Cc1c[nH]c2c1cccc2Cl				73945-46-7	75102-74-8	tryptophan	non-natural
+CTH	4-chloro-threonine	DCTH	NA	154.57	-3.39_(predicted)	-0.06	153.29	67.63	1.73_8.96_(predicted)	ClC[C@H]([C@@H](C(=O)O)[NH3])O				132958-66-8		serine	non-natural
+D4P	4-Hydroxy-phenylglycine	DD4P	GHP	168.17	-2.06_(predicted)	1.5	183.66	97.99	1.74_8.75_9.59_(predicted)	OC(=O)[C@H](c1ccc(cc1)O)[NH3]		36143	89853	32462-30-9	22818-40-2	phenylglycine	non-natural
+DAB	Diaminobutyric acid	DDAB	NA	119.14	-4.64	-0.13	140.05	54.39	2.55_8.26_9.99_(predicted)	[NH3]CC[C@@H]([C](=O)=O)[NH3]					26908-94-1	lysine	non-natural
+DAH	3,4-Dihydroxy-phenylalanine	DDAH	NA	198.2	-2.74	1.37	214.52	128.86	1.65_9.06_9.69_12.74_(predicted)	OC(=O)[C@H](Cc1ccc(c(c1)O)O)[NH3]		6047	92222	59-92-7	5796-17-8	phenylalanine	non-natural
+DBY	3,5-dibromotyrosine	DDBY	NA	339.99	-0.38_(predicted)	3.31_(predicted)	259.58	173.92	1.35_9.44_6.75_(predicted)	OC(=O)[C@H](Cc1cc(Br)c(c(c1)Br)O)[NH3]		67532		300-38-9	50299-42-8	phenylalanine	non-natural
+DDZ	3,3-dihydroxy-alanine	DDDZ	NA	122.1	-4.57_(predicted)	-1.05_(predicted)	124.84	39.18	1.72_8.36_11.91_13.78_(predicted)	OC([C@@H](C(=O)O)[NH3])O						serine	non-natural
+DILE	Diethylalanine	D2EL	NA	146.21	-1.32_(predicted)	3.39	185.21	99.55	2.85_9.58_(predicted)	CCC([C@@H](C(=O)O)[NH3])CC				14328-53-1	14328-53-1	alanine	non-natural
+DIPH	3,3-diphenylalanine	D2F1	NA	242.29	0.04_(predicted)	4.14	285.51	199.85	2.44_9.41_(predicted)	[NH3][C@@H]([C@H](c1ccccc1)c1ccccc1)C(=O)O	[NH3][C@@H]([C@H](c1ccccc1)c1ccccc1)C(=O)O			149597-92-2	149597-91-1	phenylalanine	non-natural
+DMK	3,3-dimethyl aspartic acid	DDMK	NA	160.15	-1.17_(predicted)	0.94	176.26	90.6	2.01_9.74_4.3_(predicted)	O=[C](=O)[C@H](C([C](=O)=O)(C)C)[NH3]						aspartic	non-natural
+DMP3	3-ethyl-phenylalanine	DDF4	NA	194.25	-0.61_(predicted)	3.98	242.19	156.52	2.62_9.45_(predicted)	CCc1cccc(c1)C[C@@H](C(=O)O)[NH3]						phenylalanine	non-natural
+DPP	2,3-Diaminopropanoic acid	DDPP	2RA	105.12	-3.42_(predicted)	-0.57	116.32	30.66	2.1_6.59_8.09_(predicted)	[NH3]C[C@@H]([C](=O)=O)[NH3]		97328		4033-39-0	1915-96-4	lysine	non-natural
+ESC	Ethionine	DESC	NA	164.25	-1.99_(predicted)	1.95	196.56	110.9	2.61_9.5_(predicted)	CCSCC[C@@H](C(=O)O)[NH3]		25674	92124	13073-35-3	535-32-0	methionine	non-natural
+F2F	3,4-Difluoro-phenylalanine	DF2F	NA	202.18	-1.21_(predicted)	2.49_(predicted)	208.48	122.82	1.4_9.42_(predicted)	OC(=O)[C@H](Cc1ccc(c(c1)F)F)[NH3]		716295		31105-90-5	249648-08-6	phenylalanine	non-natural
+FCL	3-chloro-Phenylalanine	DFCL	NA	200.64	-0.78_(predicted)	3.28	213.76	128.1	1.85_9.42_(predicted)	OC(=O)[C@H](Cc1cccc(c1)Cl)[NH3]		2761492	7009409	80126-51-8	80126-52-9	phenylalanine	non-natural
+FGA4	4-Fluoro-glutamic acid	D4FG	NA	166.13	-3.03_(predicted)	1.45_(predicted)	162.47	76.81	1.78_9.45_3.64_(predicted)	OC(=O)[C@H](C[C@@H](C(=O)O)F)[NH3]				91383-47-0	149117-03-3	aspartic	non-natural
+FGL	2-amino-propanedioic acid	DFGL	NA	118.07	-1.84_(predicted)	-0.54	114.97	29.3	0.45_8.5_3.01_(predicted)	[NH3]C([C](=O)=O)[C](=O)=O				1068-84-4		aspartic	non-natural
+FLA	Trifluoro-alanine	DFLA	TDD	144.07	-2.25_(predicted)	0.64	119.94	34.28	1.02_4.73_(predicted)	[NH3][C@@H](C(F)(F)F)C(=O)O	[NH3][C@@H](C(F)(F)F)C(=O)O					alanine	non-natural
+FPG2	2-Fluoro-phenylglycine	DFP6	NA	170.16	-1.60_(predicted)	2.27	182.98	97.31	1.58_8.96_(predicted)	OC(=O)[C@H](c1ccccc1F)[NH3]						phenylglycine	non-natural
+FPG3	3-Fluoro-phenylglycine	DFP7	NA	170.16	-1.60_(predicted)	2.27	183.32	97.66	1.57_8.96_(predicted)	OC(=O)[C@H](c1cccc(c1)F)[NH3]						phenylglycine	non-natural
+FPG4	4-Fluoro-phenylglycine	DFP8	NA	170.16	-1.60_(predicted)	2.27	180.04	94.38	1.57_8.96_(predicted)	[NH3][C@@H](c1ccc(cc1)F)C(=O)O	[NH3][C@@H](c1ccc(cc1)F)C(=O)O	853015	124515	19883-57-9	93939-74-3	phenylglycine	non-natural
+FPH2	2-Fluoro-Phenylalanine	DFF2	NA	184.19	-1.31_(predicted)	2.39_(predicted)	202.75	117.09	1.86_9.33_(predicted)	OC(=O)[C@H](Cc1ccccc1F)[NH3]		716319	716322	19883-78-4	122839-51-4	phenylalanine	non-natural
+FPH3	3-Fluoro-Phenylalanine	DFF3	NA	184.19	-1.31_(predicted)	2.75	203.08	117.42	1.86_9.41_(predicted)	OC(=O)[C@H](Cc1cccc(c1)F)[NH3]		716315		19883-77-3	2629-54-1	phenylalanine	non-natural
+FT6	6-fluoro-l-tryptophan	DFT6	NA	223.22	-0.78	2.51_(predicted)	236.8	151.14	2.13_9.4_(predicted)	OC(=O)[C@H](Cc1c[nH]c2c1ccc(c2)F)[NH3]				19310-00-0	108391-82-8	tryptophan	non-natural
+FTR	5-Fluoro-tryptophan	DFTR	NA	223.22	-0.71	2.51_(predicted)	239.19	153.53	2.12_9.4_(predicted)	[NH3][C@H](C(=O)O)Cc1c[nH]c2c1cc(F)cc2				97749-24-1	16626-02-1	tryptophan	non-natural
+FUA2	(2-furyl)-alanine	DFUO	NA	156.16	-2.31_(predicted)	1.85	177.78	92.12	1.34_9.18_(predicted)	OC(=O)[C@H](Cc1ccco1)[NH3]		2761503		127682-08-0	110772-46-8	histidine	non-natural
+FVAL	3-Fluoro-valine	DFVL	NA	136.15	-2.40_(predicted)	1.37_(predicted)	152.86	67.2	2.35_8.43_(predicted)	[NH3][C@@H](C(F)(C)C)C(=O)O	[NH3][C@@H](C(F)(C)C)C(=O)O					alanine	non-natural
+GBUT	2-Amino-4-guanidinobutryric acid	DGBT	NA	161.18	-0.66_(predicted)	-0.58_(predicted)	183.35	97.69	2.31_9.7_12.32_(predicted)	O=[C](=O)[C@H](CC[NH]=[C](=[NH2])=[NH2])[NH3]						arginine	non-natural
+GDPR	2-Amino-3-guanidinopropionic acid	DGPA	NA	147.16	-1.02_(predicted)	-0.94_(predicted)	159.06	73.39	2.06_6.75_12.24_(predicted)	[NH3][C@H]([C](=O)=O)C[NH]=[C](=[NH2])=[NH2]						arginine	non-natural
+GGB	Canavanine	DGGB	NA	176.17	-3.20_(predicted)	-0.48_(predicted)	192.41	106.75	2.1_9.16_6.64-(N)_(predicted)	[NH3][C@H]([C](=O)=O)CCON=C(N)N		439202		543-38-4		arginine	non-natural
+GHG	(2s,4s)-2,5-diamino-4-hydroxy-5-oxopentanoic acid	DGHG	NA	162.14	-3.83_(predicted)	-1.11_(predicted)	171.1	85.44	1.93_8.94_(predicted)	NC(=O)[C@H](C[C@@H]([C](=O)=O)[NH3])O						asparagine	non-natural
+GME	5-o-methyl-glutamic acid	DGME	NA	162.16	-3.18_(predicted)	0.82	185.52	99.86	2.02_9.51_(predicted)	COC(=O)CC[C@@H](C(=O)O)[NH3]		68662	111219	1499-55-4	6461-04-7	aspartic	non-natural
+HCS	homocysteine	DHCS	NA	136.19	-2.72_(predicted)	0.88_(predicted)	147.98	62.32	2.46_9.41_10.18_(predicted)	[NH3][C@H](C(=O)O)CCS		91552		6027-13-0		cysteine	non-natural
+HGA	glutamine hydroxamate	DHGA	SD3	163.15	-4.25_(predicted)	-0.48_(predicted)	174.39	88.72	1.93_9.46_8.91-(OH)_(predicted)	ONC(=O)CC[C@@H](C(=O)O)[NH3]						asparagine	non-natural
+HHK	(2s)-2,8-diaminooctanoic acid	DHHK	NA	176.26	-2.34_(predicted)	2.06	230.11	144.45	2.84_9.44_10.29_(predicted)	[NH3]CCCCCC[C@@H](C(=O)O)[NH3]						lysine	non-natural
+HIL4	4-Hydroxy-L-isoleucine	DHIL	NA	148.18	-2.82_(predicted)	0.65	175.95	90.28	2.46_9.22_(predicted)	C[C@H]([C@@H]([C@@H](C(=O)O)[NH3])C)O		2773624		781658-23-9		serine	non-natural
+HL2	(2s,3r)-2-amino-3-hydroxy-4-methylpentanoic acid	DHL2	NA	148.18	-2.65_(predicted)	0.76	175.73	90.07	2.44_8.99_(predicted)	CC([C@H]([C@@H](C(=O)O)[NH3])O)C						serine	non-natural
+HLEU	Homoleucine	DHL1	NA	145.2	-0.44_(predicted)	2.64_(predicted)	191.57	105.91	2.85_9.53_(predicted)	[NH3][C@H]([C](=O)=O)CCC(C)C						alanine	non-natural
+HLU	beta-hydroxyleucine	DHLU	NA	147.17	-1.77_(predicted)	0.76	178.34	92.68	2.44_8.99_(predicted)	CC([C@@H]([C@@H]([C](=O)=O)[NH3])O)C		134611		5817-22-1		serine	non-natural
+HOX	4-amino-L-phenylalanine	DHOX	NA	181.21	-2.2	1.39	208.82	123.15	1.54_9.52_4.24_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)N		151001		943-80-6	102281-45-8	phenylalanine	non-natural
+HPE	Homophenylalanine	DHPE	NA	180.22	-1.2	3.15	218.78	133.11	2.55_9.52_(predicted)	[NH3][C@H](C(=O)O)CCc1ccccc1		2724505		943-73-7	82795-51-5	phenylalanine	non-natural
+HQA	3-(8-hydroxyquinolin-3-yl)-l-alanine	DHQA	NA	233.24	-1.50_(predicted)	2.20_(predicted)	255.25	169.59	1.48_9.66_2.66_9.4_(predicted)	OC(=O)[C@H](Cc1cnc2c(c1)cccc2O)[NH3]						phenylalanine	non-natural
+HRG	homoarginine	DHRG	NA	190.24	-3.9	0.31_(predicted)	225.15	139.49	2.49_9.45_12.23_(predicted)	[NH2]=[C](=[NH]CCCC[C@@H](C(=O)O)[NH3])=[NH2]				156-86-5	110798-13-5	arginine	non-natural
+HRP	5-Hydroxy-tryptophan	DHRP	NA	221.23	-1.64_(predicted)	2.06_(predicted)	242.85	157.19	2.15_9.18_9.63_(predicted)	OC(=O)[C@H](Cc1c[nH]c2c1cc(O)cc2)[NH3]		439280		4350-09-8		tryptophan	non-natural
+HSER	homoserine	DHSE	NA	120.13	-3.69_(predicted)	-0.3	137.74	52.08	2.23_9.16_(predicted)	OCC[C@@H](C(=O)O)[NH3]		12647	2724170	672-15-1	6027-21-0	serine	non-natural
+HTR	beta-hydroxy-tryptophane	DHTR	NA	221.23	-2.39_(predicted)	1.16_(predicted)	238.5	152.84	2.3_8.83_(predicted)	OC(=O)[C@H]([C@H](c1c[nH]c2c1cccc2)O)[NH3]						tryptophan	non-natural
+HVA	3-hydroxy-l-valine	DHVA	DHV	133.15	-2.55_(predicted)	0.05	152.99	67.33	2.34_9.08_(predicted)	[NH3][C@@H](C(O)(C)C)[C](=O)=O		192763		2280-27-5	2280-28-6	serine	non-natural
+I2M	3-methyl-l-alloisoleucine	DI2M	NA	146.21	-1.28_(predicted)	2.64_(predicted)	184.17	98.51	2.85_9.31_(predicted)	CCC([C@@H](C(=O)O)[NH3])(C)C						alanine	non-natural
+IGL	alpha-amino-2-indanacetic acid	DIGL	NA	191.23	-0.23_(predicted)	3.33	226.06	140.4	2.4_9.56_(predicted)	[NH3][C@H]([C](=O)=O)[C@@H]1Cc2c(C1)cccc2						alanine	non-natural
+IIL	Allo-Isoleucine	DIIL	NA	132.18	-1.76	2.89	171.18	85.52	2.79_9.59_(predicted)	CC[C@H]([C@@H](C(=O)O)[NH3])C			94206	1509-34-8	1509-35-9	alanine	non-natural
+ILX	4,5-dihydroxy-isoleucine	DILX	NA	163.17	-2.99_(predicted)	-0.18_(predicted)	187.58	101.92	2.2_8.9_(predicted)	OC[C@@H]([C@@H]([C@@H]([C](=O)=O)[NH3])C)O						serine	non-natural
+IYR	3-iodo-tyrosine	DIYR	NA	308.09	-1.11_(predicted)	2.58_(predicted)	228.89	143.23	1.54_9.5_8.16_(predicted)	OC(=O)[C@H](Cc1ccc(c(c1)I)O)[NH3]		439744		70-78-0		phenylalanine	non-natural
+KYN	kynurenine	DKYN	NA	209.22	-2.18_(predicted)	1.63	229.38	143.72	1.19_8.96_2.43_(predicted)	OC(=O)[C@H](CC(=O)c1ccccc1N)[NH3]		161166	1152206	2922-83-0	13441-51-5	phenylalanine	non-natural
+LDO	6-hydroxy-l-norleucine	DLDO	DDO	148.18	-2.98_(predicted)	0.84	182.18	96.52	2.46_9.53_(predicted)	OCCCC[C@@H](C(=O)O)[NH3]		97725		6033-32-5		serine	non-natural
+LE1	Penicillamine	DLE1	LEI	150.22	-1.78	1.31_(predicted)	162.89	77.23	2.56_9.09_9.85_(predicted)	[NH3][C@@H](C(S)(C)C)C(=O)O	[NH3][C@@H](C(S)(C)C)C(=O)O		5852	1113-41-3	52-67-5	cysteine	non-natural
+LED	(4r)-5-oxo-l-leucine	DLED	NA	146.16	-3.00_(predicted)	0.77_(predicted)	173.37	87.71	2.25_9.51_(predicted)	O=C[C@@H](C[C@@H](C(=O)O)[NH3])C						other	non-natural
+LEF	(4s)-5-fluoro-l-leucine	DLEF	NA	150.17	-1.87_(predicted)	1.90_(predicted)	175.89	90.23	2.52_9.52_(predicted)	FC[C@H](C[C@@H](C(=O)O)[NH3])C						alanine	non-natural
+LME	(3r)-3-methyl-l-glutamic acid	DLME	NA	161.16	-2.19_(predicted)	0.79	176.87	91.21	2.02_9.6_4.24_(predicted)	O=[C](=O)C[C@H]([C@@H](C(=O)O)[NH3])C						aspartic	non-natural
+LMQ	3-methyl-l-glutamine	DLMQ	NA	161.18	-3.72_(predicted)	-0.21	180.35	94.68	2.26_9.38_(predicted)	NC(=O)C[C@@H]([C@@H](C(=O)O)[NH3])C						asparagine	non-natural
+LVG	vinylglycine	DLVG	NA	101.1	-1.67_(predicted)	1.13	121.26	35.6	2.42_8.95_(predicted)	C=C[C@@H]([C](=O)=O)[NH3]		156126		70982-53-5		alanine	non-natural
+LVN	4-oxo-l-valine	DLVN	NA	131.13	-2.48_(predicted)	0.59	150.07	64.41	2.12_9.05_(predicted)	O=C[C@H]([C@@H]([C](=O)=O)[NH3])C						other	non-natural
+M2S	3,3-dimethyl-methionine sulfoxide	DM2S	NA	194.27	-3.08_(predicted)	1.73_(predicted)	217.36	131.7	2_9.3_(predicted)	C[S@@](=O)CC([C@@H](C(=O)O)[NH3])(C)C						other	non-natural
+ME0	hydroxy-l-methionine	DME0	NA	166.22	-2.95_(predicted)	0.66_(predicted)	184.55	98.89	2.23_9.5_(predicted)	OCSCC[C@@H](C(=O)O)[NH3]						methionine	non-natural
+MEG	(3s)-3-methyl-l-glutamic acid	DMEG	NA	161.16	-2.19_(predicted)	0.79	176.72	91.06	2.02_9.6_4.25_(predicted)	O=[C](=O)C[C@@H]([C@@H](C(=O)O)[NH3])C						aspartic	non-natural
+MEN	n-methyl-asparagine	DMEN	MND	147.15	-4.12_(predicted)	-1.05	164.52	78.86	2.14_8.43_(predicted)	CNC(=O)C[C@@H](C(=O)O)[NH3]		100393		7175-34-0	86070-35-1	asparagine	non-natural
+MEQ	n5-methyl-glutamine	DMEQ	NA	161.18	-3.76_(predicted)	0.01_(predicted)	188.27	102.61	2.23_9.31_(predicted)	CNC(=O)CC[C@@H](C(=O)O)[NH3]						asparagine	non-natural
+MHO	s-oxymethionine	DMHO	NA	166.22	-3.91_(predicted)	0.77_(predicted)	183.35	97.68	1.74_9.51_(predicted)	C[S@@](=O)CC[C@@H](C(=O)O)[NH3]		158980		3226-65-1		methionine	non-natural
+MOT5	5-Methoxy-tryptophan	D5XW	NA	235.26	-1.31_(predicted)	2.38_(predicted)	267.48	181.82	2.22_9.42_(predicted)	COc1ccc2c(c1)c(c[nH]2)C[C@@H](C(=O)O)[NH3]				25197-96-0	89496-02-6	tryptophan	non-natural
+MP34	3,4-Dimethyl-phenylalanine	DM34	NA	193.24	0.20_(predicted)	3.7	240.27	154.61	2.67_9.47_(predicted)	O=[C](=O)[C@H](Cc1ccc(c(c1)C)C)[NH3]				142995-28-6		phenylalanine	non-natural
+MPH2	2-Methyl-phenylalanine	D2MF	NA	180.22	-1.04_(predicted)	3.12	217.69	132.02	2.58_9.46_(predicted)	OC(=O)[C@H](Cc1ccccc1C)[NH3]		2761493		80126-53-0		phenylalanine	non-natural
+MTR5	5-Methyl-tryptophan	D5MW	NA	219.26	-0.92_(predicted)	2.78_(predicted)	255.65	169.98	2.61_9.41_(predicted)	Cc1cc2c(C[C@@H](C(=O)O)[NH3])c[nH]c2cc1		150990		154-06-3	99295-79-1	tryptophan	non-natural
+MTR6	6-Methyl-tryptophan	D6MW	NA	219.26	-0.92_(predicted)	2.78_(predicted)	255.63	169.97	2.61_9.41_(predicted)	OC(=O)[C@H](Cc1c[nH]c2c1ccc(c2)C)[NH3]		164910		1991-93-1		tryptophan	non-natural
+MTY	m-Tyrosine	DMTY	NA	182.2	-1.76_(predicted)	1.98	206.75	121.09	2_9.14_9.52_(predicted)	OC(=O)[C@H](Cc1cccc(c1)O)[NH3]		6950578	6950580	587-33-7	32140-49-1	phenylalanine	non-natural
+NAL	2-Naphthyl-alanine	DNAL	NA	216.26	-0.15	4	253.11	167.45	2.61_9.44_(predicted)	OC(=O)[C@H](Cc1ccc2c(c1)cccc2)[NH3]		185915		58438-03-2	76985-09-6	phenylalanine	non-natural
+NAO1	5-hydroxy-1-naphthalene	D51N	NA	232.25	-0.51_(predicted)	3.18_(predicted)	260.31	174.65	2.24_9.25_9.81_(predicted)	OC(=O)[C@H](Cc1cccc2c1cc(O)cc2)[NH3]						phenylalanine	non-natural
+NAO2	6-hydroxy-2-naphthalene	D62N	NA	232.25	-0.51_(predicted)	3.18_(predicted)	261.2	175.53	2.23_9.27_9.82_(predicted)	OC(=O)[C@H](Cc1ccc2c(c1)cc(cc2)O)[NH3]						phenylalanine	non-natural
+NIY	meta-nitro-tyrosine	DNIY	NA	226.19	-0.50_(predicted)	2.15	233.44	147.78	0.96_9.48_6.3-(OH)_(predicted)	O=[C](=O)[C@H](Cc1ccc(c(c1)N(=O)=O)O)[NH3]		65124		621-44-3	32988-39-9	phenylalanine	non-natural
+NLE	Norleucine	DNLE	DNE	131.17	-1.53	2.89	171.92	86.26	2.79_9.53_(predicted)	CCCC[C@@H]([C](=O)=O)[NH3]		21236	456468	327-57-1	327-56-0	alanine	non-natural
+NVA	Norvaline	DNVA	NA	117.15	-1.86	2.36	149.67	64.01	2.36_9.76	CCC[C@@H]([C](=O)=O)[NH3]		65098	439575	6600-40-4	2013-12-9	alanine	non-natural
+OAS	o-acetylserine	DOAS	NA	148.14	-3.48_(predicted)	0.18	164.71	79.05	1.86_8.6_(predicted)	CC(=O)OC[C@@H](C(=O)O)[NH3]		99478		5147-00-2	44901-25-9	other	non-natural
+OBF	(2s)-2-amino-4,4-difluorobutanoic acid	DOBF	NA	140.11	-2.16_(predicted)	0.75	141.26	55.6	1.79_9.36_(predicted)	[NH3][C@H](C(=O)O)CC(F)F				121960-22-3		alanine	non-natural
+OCY	s-(2-hydroxyethyl)-l-cysteine	DOCY	NA	165.21	-2.52_(predicted)	0.19_(predicted)	184.75	99.09	2.26_9.14_(predicted)	OCCSC[C@@H]([C](=O)=O)[NH3]		119224		6367-98-2	85955-36-8	serine	non-natural
+OLT	o-methyl-l-threonine	DOLT	NA	134.15	-3.08_(predicted)	0.45_(predicted)	158.68	73.01	2.34_8.89_(predicted)	CO[C@@H]([C@@H](C(=O)O)[NH3])C		2724875		4144-02-9		other	non-natural
+OMT	Methionine sulfone	DOMT	NA	182.22	-3.1	-0.03_(predicted)	194.49	108.83	1.55_9.49_(predicted)	OC(=O)[C@H](CCS(=O)(=O)C)[NH3]				7314-32-1		methionine	non-natural
+OMX	(betar)-beta-hydroxy-l-tyrosine	DOMX	NA	198.2	-2.88_(predicted)	0.25	213	127.34	1.76_8.8_9.49-(para-OH)_(predicted)	OC(=O)[C@H]([C@@H](c1ccc(cc1)O)O)[NH3]						phenylalanine	non-natural
+OMY	(betar)-3-chloro-beta-hydroxy-l-tyrosine	DOMY	OMZ	232.64	-2.25_(predicted)	1.31_(predicted)	228.77	143.11	1.42_8.93_7.62_(predicted)	OC(=O)[C@H]([C@@H](c1ccc(c(c1)Cl)O)O)[NH3]						phenylalanine	non-natural
+ONL	5-oxo-l-norleucine	DONL	NA	146.16	-3.35_(predicted)	0.29	173.68	88.02	2.25_9.51_(predicted)	CC(=O)CC[C@@H](C(=O)O)[NH3]						other	non-natural
+ORN	Ornithine	DORN	ORD	133.17	-4.41	0.48	165.17	79.5	2.67_9.44_9.96_(predicted)	[NH3]CCC[C@@H]([C](=O)=O)[NH3]		6262		70-26-8	410523-47-6	lysine	non-natural
+OTYR	o-Tyrosine	D2TR	NA	182.2	-1.76_(predicted)	1.98	208.34	122.68	2.01_8.88_9.38_(predicted)	OC(=O)[C@H](Cc1ccccc1O)[NH3]		6950574		709-16-0	24008-77-3	phenylalanine	non-natural
+PBF	4-benzoyl-phenylalanine	DPBF	NA	270.3	-0.07_(predicted)	3.63_(predicted)	315.08	229.42	1.59_9.21_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)C(=O)c1ccccc1				104504-45-2	201466-03-7	phenylalanine	non-natural
+PF5	pentafluoro-phenylalanine	DPF5	NA	256.15	-0.91_(predicted)	2.79_(predicted)	224.06	138.39	0.34_9.17_(predicted)	[NH3][C@H](C(=O)O)Cc1c(F)c(F)c(c(c1F)F)F			6992999	138109-65-6	40332-58-9	phenylalanine	non-natural
+PFF	4-Fluoro-Phenylalanine	DPFF	NA	184.19	-1.89	2.58	203.09	117.42	1.86_9.45_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)F		716312		1132-68-9	18125-46-7	phenylalanine	non-natural
+PHI	4-Iodo-Phenylalanine	DPHI	NA	292.09	-0.76_(predicted)	2.94_(predicted)	222.19	136.52	1.9_9.44_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)I		134497		24250-85-9	62561-75-5	phenylalanine	non-natural
+PPN	4-Nitro-phenylalanine	DPPN	NA	210.19	-1.25	2.37	223.74	138.07	1.16_9.37_(predicted)	O=[C](=O)[C@H](Cc1ccc(cc1)N(=O)=O)[NH3]		13706	679497	949-99-5	56613-61-7	phenylalanine	non-natural
+PTR	phosphotyrosine	DPTR	NA	262.18	-3.07_(predicted)	0.63_(predicted)	257.71	172.04	1.98_9.46_6.21_1.25_(predicted)	OC(=O)[C@H](Cc1ccc(cc1)OP(=O)(O)O)[NH3]		30819		21820-51-9	108321-25-1	phenylalanine	non-natural
+PTR2	phosphotyrosine  (charge: -2)	DPT6	NA	262.18	-3.07_(predicted)	0.63_(predicted)	256.37	170.71	1.98_9.46_6.21_1.25_(predicted)	OC(=O)[C@H](Cc1ccc(cc1)OP(=O)(O)O)[NH3]		30819		21820-51-9	108321-25-1	phenylalanine	non-natural
+PYR2	3-(2-Pyridyl)-alanine	DY23	NA	166.18	-1.56_(predicted)	1.11	193.91	108.25	1.77_9.27_3.04_(predicted)	O=[C](=O)[C@H](Cc1ccccn1)[NH3]		2761499	7019768	37535-51-6	37535-52-7	phenylalanine	non-natural
+PYR3	3-(3-Pyridyl)-alanine	DY33	NA	167.19	-2.48_(predicted)	1.2	193.64	107.98	1.79_9.37_3.85_(predicted)	OC(=O)[C@H](Cc1cccnc1)[NH3]		152953		64090-98-8	70702-47-5	phenylalanine	non-natural
+PYR4	3-(4-Pyridyl)-alanine	DY34	NA	167.19	-2.48_(predicted)	1.22	193.57	107.91	1.79_9.4_4.86_(predicted)	[NH3][C@H](C(=O)O)Cc1ccncc1				178933-04-5	174096-41-4	phenylalanine	non-natural
+PYZ1	3-(1-Pyrazolyl)-alanine	DPZ4	NA	156.16	-3.42_(predicted)	0.23	175.52	89.86	1.25_8.84_3.08-(ND1)_(predicted)	OC(=O)[C@H](Cn1cccn1)[NH3]		151491		2734-48-7	2734-48-7	histidine	non-natural
+QU32	3-(2-Quinolyl)-alanine	DQ32	NA	217.24	-1.11_(predicted)	2.59	250.24	164.58	1.66_9.29_2.44_(predicted)	OC(=O)[C@H](Cc1ccc2c(n1)cccc2)[NH3]				161513-46-8	170421-67-7	phenylalanine	non-natural
+QU33	3-(3-quinolyl)-alanine	DQ33	NA	217.24	-1.14_(predicted)	2.53	248.18	162.52	2.22_9.38_3.22_(predicted)	OC(=O)[C@H](Cc1cnc2c(c1)cccc2)[NH3]						phenylalanine	non-natural
+QU34	3-(4-quinolyl)-alanine	DQ34	NA	217.24	-1.14_(predicted)	2.61	248.44	162.78	2.25_9.38_4.3_(predicted)	OC(=O)[C@H](Cc1ccnc2c1cccc2)[NH3]						phenylalanine	non-natural
+QU35	3-(5-Quinolyl)-alanine	DQ35	NA	217.24	-1.14_(predicted)	2.47	250.03	164.37	2.24_9.43_4.31_(predicted)	OC(=O)[C@H](Cc1ccc2c(c1)nccc2)[NH3]						phenylalanine	non-natural
+QU36	3-(6-Quinolyl)-alanine	DQ36	NA	217.24	-1.23_(predicted)	2.47_(predicted)	249.91	164.24	2.17_9.43_5.18_(predicted)	OC(=O)[C@H](Cc1ccc2c(c1)cncc2)[NH3]						phenylalanine	non-natural
+QX32	3-(2-quinoxalyl)-alanine	DQX3	NA	218.23	-2.09_(predicted)	1.61	243.44	157.78	1.97_9.22_(predicted)	OC(=O)[C@H](Cc1cnc2c(n1)cccc2)[NH3]						phenylalanine	non-natural
+SEP	phosphoserine	DSEP	NA	186.08	-5.14_(predicted)	-1.55_(predicted)	168.6	82.94	2.22_8.65_6.71_1.75_(predicted)	OC(=O)[C@H](COP(=O)(O)O)[NH3]		68841		407-41-0	73913-63-0	serine	non-natural
+SEP2	phosphoserine (charge: -2)	DSE2	NA	186.08	-5.14_(predicted)	-1.55_(predicted)	167.17	81.5	2.22_8.65_6.71_1.75_(predicted)	OC(=O)[C@H](COP(=O)(O)O)[NH3]		68841		407-41-0	73913-63-0	serine	non-natural
+SLZ	thialysine	DSLZ	NA	166.24	-3.66_(predicted)	-0.06_(predicted)	186.92	101.26	2.52_9.03_9.74_(predicted)	[NH3][C@H](C(=O)O)CSCC[NH3]		99558		2936-69-8		lysine	non-natural
+SME	Methionine sulfoxide	DSME	NA	166.22	-3.91_(predicted)	0.77_(predicted)	183.87	98.21	1.74_9.51_(predicted)	C[S@@](=O)CC[C@@H](C(=O)O)[NH3]		158980		3226-65-1		methionine	non-natural
+STYA	Styrylalanine	DSYA	NA	192.23	-0.77_(predicted)	3.35	233.17	147.5	2.51_9.48_(predicted)	OC(=O)[C@H](CC=Cc1ccccc1)[NH3]				267650-37-3	264903-53-9	phenylalanine	non-natural
+SYM	2s,4r-4-methylglutamate	DSYM	NA	161.16	-2.06_(predicted)	0.94	177.99	92.33	2_9.53_4.21_(predicted)	OC(=O)[C@H](C[C@H]([C](=O)=O)C)[NH3]				31137-74-3		aspartic	non-natural
+TBP4	4-tert-butyl-phenylalanine	D4TF	NA	222.3	0.26_(predicted)	5.17	278.4	192.74	2.69_9.46_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)C(C)(C)C		2761795		82372-74-5	274262-82-7	phenylalanine	non-natural
+TEZA	3-(2-Tetrazolyl)-alanine	DTEZ	NA	158.14	-3.54_(predicted)	0.12_(predicted)	164.49	78.83	1.14_8.79_(predicted)	OC(=O)[C@H](Cn1nncn1)[NH3]				405150-16-5		histidine	non-natural
+TFG2	2-(Trifluoromethyl)-phenylglycine	D2TG	NA	220.17	-0.82_(predicted)	3.01	207.97	122.31	1.59_8.61_(predicted)	OC(=O)[C@H](c1ccccc1C(F)(F)F)[NH3]				240490-00-0	240490-00-0	phenylglycine	non-natural
+TFG3	3-(Trifluoromethyl)-phenylglycine	D3TG	NA	220.17	-0.82_(predicted)	3.01	211.34	125.67	1.58_8.74_(predicted)	OC(=O)[C@H](c1cccc(c1)C(F)(F)F)[NH3]						phenylglycine	non-natural
+TFG4	4-(Trifluoromethyl)-phenylglycine	D4TG	NA	220.17	-0.82_(predicted)	3.01	211.37	125.71	1.58_8.8_(predicted)	[NH3][C@@H](c1ccc(cc1)C(F)(F)F)C(=O)O	[NH3][C@@H](c1ccc(cc1)C(F)(F)F)C(=O)O			144789-75-3		phenylglycine	non-natural
+TFLE	5,5,5-Trifluoro-leucine	DTFL	NA	186.15	-1.10_(predicted)	2.67_(predicted)	186.24	100.58	1.82_9.51_(predicted)	OC(=O)[C@H](C[C@@H](C(F)(F)F)C)[NH3]				25367-71-9	109719-09-7	alanine	non-natural
+TFP2	2-(Trifluoromethyl)-phenylalanine	D2TF	NA	234.19	-0.52_(predicted)	3.17_(predicted)	230.73	145.07	1.86_9.37_(predicted)	OC(=O)[C@H](Cc1ccccc1C(F)(F)F)[NH3]		2761500		119009-47-1	130930-49-3	phenylalanine	non-natural
+TFP3	3-(Trifluoromethyl)-phenylalanine	D3TF	NA	233.19	0.36_(predicted)	3.17_(predicted)	234.36	148.69	1.86_9.43_(predicted)	OC(=O)[C@H](Cc1cccc(c1)C(F)(F)F)[NH3]		2777600		14464-68-7	14464-67-6	phenylalanine	non-natural
+TFP4	4-(Trifluoromethyl)-phenylalanine	D4TM	NA	233.19	0.36_(predicted)	3.17_(predicted)	234.38	148.71	1.86_9.44_(predicted)	[NH3][C@H](C(=O)O)Cc1ccc(cc1)C(F)(F)F		2761501	7004189	114926-38-4	114872-99-0	phenylalanine	non-natural
+TH6	4-hydroxy-l-threonine	DTH6	NA	135.12	-3.78_(predicted)	-1.36	145.43	59.76	1.92_8.62_(predicted)	OC[C@H]([C@@H]([C](=O)=O)[NH3])O		193577		21768-45-6		serine	non-natural
+THA3	3-(3-thienyl)-alanine	D3TA	NA	172.22	-1.73_(predicted)	2.34	188.53	102.87	2.07_9.83_(predicted)	OC(=O)[C@H](Cc1cscc1)[NH3]				3685-51-6	152612-26-5	histidine	non-natural
+THG2	2-thienylglycine	D2TH	NA	158.2	-2.05	1.81	165.75	80.09	1.73_8.37_(predicted)	OC(=O)[C@H](c1cccs1)[NH3]			736059	4052-59-9	43189-45-3	other	non-natural
+THG3	3-thienylglycine	D3TH	NA	158.2	-2.02_(predicted)	1.81	165.53	79.86	1.79_8.52_(predicted)	OC(=O)[C@H](c1cscc1)[NH3]		16220058		1194-87-2	1194-86-1	other	non-natural
+THIC	Thio-citrulline	DTVI	NA	192.26	-0.68_(predicted)	0.46_(predicted)	212.1	126.44	2.69_9.23_(predicted)	OC(=O)[C@H](CCC[NH]=[C](=S)=[NH2])[NH3]						arginine	non-natural
+TIH	3-(2-thienyl)-alanine	DTIH	NA	172.22	-1.69_(predicted)	2.33	188.84	103.18	2.05_9.27_(predicted)	OC(=O)[C@H](Cc1cccs1)[NH3]		146719	7111750	22951-96-8	62561-76-6	histidine	non-natural
+TPO	phosphothreonine	DTPO	D11	200.11	-3.75_(predicted)	-1.19_(predicted)	187	101.33	2.27_8.72_6.7_1.72_(predicted)	C[C@H]([C@@H]([C](=O)=O)[NH3])OP(O)(O)O				1114-81-4	96193-69-0	serine	non-natural
+TPO2	phosphothreonine  (charge: -2)	DPO6	NA	200.11	-3.75_(predicted)	-1.19_(predicted)	185.69	100.03	2.27_8.72_6.7_1.72_(predicted)	C[C@H]([C@@H]([C](=O)=O)[NH3])OP(O)(O)O				1114-81-4	96193-69-0	serine	non-natural
+TRO	2-hydroxy-tryptophan	DTRO	NA	221.23	-1.30_(predicted)	2.39_(predicted)	238.51	152.84	2.2_8.64_8.63_(predicted)	OC(=O)[C@H](Cc1c(O)[nH]c2c1cccc2)[NH3]						tryptophan	non-natural
+TRX	6-hydroxy-tryptophan	DTRX	NA	220.22	-0.75_(predicted)	2.06_(predicted)	239.95	154.29	2.15_9.16_9.77_(predicted)	O=[C](=O)[C@H](Cc1c[nH]c2c1ccc(c2)O)[NH3]						tryptophan	non-natural
+TRZ4	3-(1,2,4-Triazol-1-yl)-alanine	DTZR	NA	157.15	-3.65_(predicted)	0.00_(predicted)	170.58	84.91	0.82_8.84_2.07-(NE)_(predicted)	[NH3][C@H](C(=O)O)Cn1cncn1				4819-36-7		histidine	non-natural
+TTQ	6-amino-7-hydroxy-l-tryptophan	DTTQ	NA	235.24	-1.43_(predicted)	1.38_(predicted)	250.75	165.09	1.64_9.27_9.82_3.54_(predicted)	[NH3][C@H]([C](=O)=O)Cc1c[nH]c2c1ccc(c2O)N						tryptophan	non-natural
+TY2	3-Amino-L-tyrosine	DTY2	NA	197.21	-2.45_(predicted)	1.16	219.61	133.95	1.24_9.42_4.19_10.32_(predicted)	OC(=O)[C@H](Cc1ccc(c(c1)N)O)[NH3]		160450		300-34-5		phenylalanine	non-natural
+TYI	3,5-diiodotyrosine	DTYI	NA	433.99	-0.46_(predicted)	4.2	252.64	166.98	1.47_9.45_7.23_(predicted)	OC(=O)[C@H](Cc1cc(I)c(c(c1)I)O)[NH3]			7059641	300-39-0	16711-71-0	phenylalanine	non-natural
+TYQ	3-amino-6-hydroxy-tyrosine	DTYQ	NA	213.21	-2.80_(predicted)	0.89_(predicted)	223.61	137.95	0.99_8.98_11.56_5.2_9.62_(predicted)	OC(=O)[C@H](Cc1cc(N)c(cc1O)O)[NH3]						phenylalanine	non-natural
+TZA4	(4-thiazolyl)-alanine	D4TH	NA	173.21	-2.34_(predicted)	0.97	185.19	99.53	0.26_9.2_1.96_(predicted)	[NH3][C@H](C(=O)O)Cc1cscn1				136010-41-8	131896-42-9	histidine	non-natural
+UN1	2-Aminoadipic acid	DUN1	11C	162.16	-3.15_(predicted)	0.79	179.36	93.69	2.01_9.53_4.29_(predicted)	OC(=O)CCC[C@@H](C(=O)O)[NH3]		92136		542-32-5	7620-28-2	aspartic	non-natural
+VAH	Hydroxynorvaline	DVAH	NA	133.15	-2.21_(predicted)	0.25	155.79	70.13	2.34_8.99_(predicted)	CC[C@H]([C@@H]([C](=O)=O)[NH3])O		65097	65097	34042-00-7	34042-00-7	serine	non-natural
+WFP	3,5-Difluoro-phenylalanine	DWFP	NA	202.18	-1.21_(predicted)	2.49_(predicted)	208.53	122.87	1.4_9.38_(predicted)	[NH3][C@H](C(=O)O)Cc1cc(F)cc(c1)F		716307	716310	31105-91-6	266360-63-8	phenylalanine	non-natural
+YCM	cysteine-s-acetamide	DYCM	NA	179.22	-3.77_(predicted)	-0.18_(predicted)	187.98	102.32	2.08_8.83_(predicted)	NC(=O)CSC[C@@H](C(=O)O)[NH3]		95482	95482	17528-66-4	17528-66-4	asparagine	non-natural
+YOF	3-fluorotyrosine	DYOF	NA	200.19	-1.66_(predicted)	2.03_(predicted)	210.5	124.83	1.57_9.48_8.37_(predicted)	OC(=O)[C@H](Cc1ccc(c(c1)F)O)[NH3]		643330	719318	7423-96-3	64024-06-2	phenylalanine	non-natural

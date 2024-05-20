@@ -25,10 +25,11 @@ import os.path as path
 from aminoacids import aminos
 from aminoacids import special_aminos
 from aminoacids import d_aminos
+from aminoacids import unnatural_aminos
 
 # All aminos - a combined dictionary of all defined amino acids
 all_aminos = {}
-for amino_dict in [aminos, special_aminos, d_aminos]:
+for amino_dict in [aminos, special_aminos, d_aminos, unnatural_aminos]:
     all_aminos.update(amino_dict)
 # Aminodata - amino acids available to program
 # Default - a copy of all_aminos
@@ -683,7 +684,7 @@ def constrained_peptide_smiles(peptideseq, pattern):
     if smiles.count("*") > 2:
         raise BondSpecError(
             "Cannot handle more than one specified\
-          constraint, found %s in sequence %s, \nsmiles %s"
+            constraint, found %s in sequence %s, \nsmiles %s"
             % (smiles.count("*"), peptideseq, smiles)
         )
 
@@ -736,12 +737,14 @@ def gen_library_structs(
     scscbond=False,
     linear=False,
 ):
-    """Given a desired peptide library length, and constraints, returns a list
+    """
+    Given a desired peptide library length, and constraints, returns a list
     of tuples of peptide names (sequence-constraint descriptor) and SMILES
     strings
 
     If no constraints are set True, all non-constrained peptides are returned
-    Can filter out peptides that break synthesis rules"""
+    Can filter out peptides that break synthesis rules
+    """
     for peptideseq, bond_def in gen_library_strings(
         liblen, ssbond, htbond, scctbond, scntbond, scscbond, linear
     ):
@@ -987,7 +990,7 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
                     seq, bond_def, smiles = peptide
                     if bond_def == "":
                         bond_def = "linear"
-                    print("%s-%s: %s" % (",".join(seq), bond_def, smiles), file=f)
+                    # print("%s-%s: %s" % (",".join(seq), bond_def, smiles), file=f)
                     count += 1
                 except Exception as e:
                     print(e)
@@ -1028,17 +1031,17 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
     return count
 
 
-def main(pattern, out_f="out.sdf"):
+def main(pattern, out_file):
     """
     If running module as a script, take the input as a pattern to generate
     combinations for, and ultimately to write to a single .sdf file
     Will use all possible constraints
     """
-    print("Writting all peptides for pattern %s" % pattern)
+    print("Writing all peptides for pattern %s" % pattern)
+    out_f = out_file+".sdf"
     peptides = gen_all_matching_peptides(pattern)
     structures = gen_structs_from_seqs(peptides, True, True, True, True, True, True)
     write_library(structures, out_f, "structure", False, True)
 
-
 if __name__ == "__main__":
-    main(*sys.argv[1:])
+    main(*sys.argv[1:], sys.argv[0])

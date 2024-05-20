@@ -1,1 +1,1 @@
-C[C@@H]1NC(=O)[C@H](CS)NC(=O)C[C@H](C(=O)N[C@@H](Cc2ccccc2)C(=O)NCC(=O)O)NC(=O)[C@H](CC(=O)O)NC1=O	CADDFGSCXXXZXX
+C[C@@H]1NC(=O)[C@H](CS)NC(=O)C[C@H](C(=O)N[C@@H](Cc2c[nH]c3ccccc23)C(=O)N[C@@H](Cc2ccccc2)C(=O)NCC(=O)O)NC(=O)[C@H](CC(=O)O)NC1=O	CADDWFGSCXXXZXXX
