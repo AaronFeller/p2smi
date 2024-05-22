@@ -11,7 +11,7 @@ import locale
 import operator
 # import pdb
 from pyvirtualdisplay import Display
-from subprocess import call
+# from subprocess import call
 
 locale.setlocale(locale.LC_ALL, "")
 
@@ -34,11 +34,11 @@ from rdkit.Chem import AllChem
 
 # Check which PepLibGen is used - useful for building with py2app/py2exe
 # print "PepLibGen", PepLibGen.__file__
-from ..PepLibGen.StructGen import zinc_peptides
-from ..PepLibGen.StructGen import synthrules
-from ..PepLibGen.StructGen import StructGen as sg
-from ..PepLibGen.StructGen import aminoacids as aa
-from ..PepLibGen.Analysis import chem_analysis as ca
+from PepLibGen.StructGen import zinc_peptides
+from PepLibGen.StructGen import synthrules
+from PepLibGen.StructGen import StructGen as sg
+from PepLibGen.StructGen import aminoacids as aa
+from PepLibGen.Analysis import chem_analysis as ca
 
 # Hack to make RDKIT play nice when packaged...
 if "RDBASE" not in list(os.environ.keys()):
@@ -86,7 +86,7 @@ class PepApp(tk.Frame):
         self.topLevelMenu()
         # Variables
         self.on_off = dict(
-            [(amino, tk.IntVar()) for amino in list(sg.all_aminos.keys())]
+            [(amino, tk.IntVar()) for amino in list(aa.all_aminos.keys())]
         )
 
     def topLevelMenu(self):
@@ -1575,7 +1575,7 @@ class PeptideBuilder(tk.Toplevel):
 
 
 if __name__ == "__main__":
-    display = Display(visible=0, size=(800, 600))
+    display = Display(visible=0, size=(800, 600), backend='xephyr')
     display.start()
     
     app = PepApp()

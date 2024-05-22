@@ -4,3 +4,5 @@ build/
 cyclops_py39/
 PDB_files/
 out/
+input/
+data/

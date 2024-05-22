@@ -3,12 +3,14 @@ import sys
 import os
 import operator
 import os.path as path
-from aminoacids import all_aminos
+from PepLibGen.StructGen import aminoacids as aa
+# from aminoacids import all_aminos
 from rdkit import Chem
 from rdkit.Chem import Draw
 from rdkit.Chem import AllChem
 
-aminodata = all_aminos
+aminodata = aa.all_aminos
+# aminodata = all_aminos
 
 class CustomError(Exception):
     pass
