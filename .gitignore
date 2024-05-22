@@ -3,3 +3,4 @@ build/
 *.bak
 cyclops_py39/
 PDB_files/
+out/
