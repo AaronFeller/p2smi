@@ -1,13 +1,17 @@
 import random
+from PepLibGen.StructGen.aminoacids import all_aminos
+from tqdm import tqdm
 
 def generate_sequence(seq_len, canonical_percent, lowercase_percent):
     # Define the amino acids
-    canonical_list = ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']
-    upper_noncon_list = ['B', 'J', 'O', 'U', 'X', 'Z']
 
-    # Calculate the percentage of noncanonical amino acids
-    noncanonical_percent = 1 - canonical_percent
-
+    letter_list = []
+    for each in all_aminos:
+        letter_list+=(all_aminos[each]['Letter'])
+    upper_noncon_list = list(set([x.upper() for x in letter_list]))
+    canonical_list = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+    upper_noncon_list = [x for x in upper_noncon_list if x not in canonical_list]
+    
     # Define the number of canonical and noncanonical amino acids
     num_canonical = int(seq_len * canonical_percent)
     num_noncanonical = seq_len - num_canonical
@@ -29,7 +33,7 @@ def generate_sequence(seq_len, canonical_percent, lowercase_percent):
     lowercase_positions = random.sample(range(seq_len), int(seq_len * lowercase_percent))
     final_sequence = ''
     for i in range(seq_len):
-        if i in lowercase_positions:
+        if i in lowercase_positions and not upper_sequence[i]=='G':
             final_sequence += upper_sequence[i].lower()
         else:
             final_sequence += upper_sequence[i]
@@ -43,10 +47,12 @@ def main(args):
     output_file = args.output
 
     with open(output_file, 'w') as file:
-        for i in range(1, num_sequences + 1):
+        for i in tqdm(range(1, num_sequences + 1), desc="Generating sequences"):
+
             seq_len = random.randint(1, 100)
             sequence = generate_sequence(seq_len, canonical_percent, lowercase_percent)
-            file.write(f">Seq{i}\n{sequence}\n")
+            cyclization = random.choice(['|HT', '|SS', '|SCNT', '|SCCT', '|SCSC'])
+            file.write(f">Seq{i}{cyclization}\n{sequence}\n")
 
 if __name__ == "__main__":
     import argparse
