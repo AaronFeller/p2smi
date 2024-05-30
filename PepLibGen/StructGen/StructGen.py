@@ -7,6 +7,7 @@ from aminoacids import all_aminos
 from rdkit import Chem
 from rdkit.Chem import Draw
 from rdkit.Chem import AllChem
+from tqdm import tqdm
 
 aminodata = all_aminos
 
@@ -378,7 +379,7 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
     count = 0
     if write == "text":
         with open(outloc, "w") as f:
-            for peptide in inputlist:
+            for peptide in tqdm(inputlist, desc="Processing peptides"):
                 try:
                     seq, bond_def, smiles = peptide
                     bond_def = bond_def if bond_def else "linear"
