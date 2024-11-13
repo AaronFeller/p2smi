@@ -114,24 +114,26 @@ def process_constraints(fasta_f):
 #             raise InvalidConstraintError(error_string.format(constraint, sequence))
 
 
-def main(fasta_f, out_f="out.sdf"):
+def main(args):
     """
-    Writes the sequences (with constraints) in fasta_f to a 3D SDF file, out_f.
+    Writes the sequences (with constraints) in fasta_f to a 3d SDF file, out_f.
     """
+    fasta = args.input_fasta
+    outfile = args.out_file
+    
     out_gen = (
         StructGen.constrained_peptide_smiles(*pair)
-        for pair in process_constraints(fasta_f)
+        for pair in process_constraints(fasta)
     )
-    StructGen.write_library(out_gen, out_f, write="text", write_to_file=True)
+    StructGen.write_library(out_gen, outfile, write="text", write_to_file=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate peptides from a fasta file.")
-    parser.add_argument("fasta_f", help="Fasta file of peptides.")
-    parser.add_argument("--out_f", help="Output file.", default="out.sdf")
-    parser.add_argument("--type", '-t', required=False, help="Type of output file.", default="text")
+    parser.add_argument("-i", "--input_fasta", help="Fasta file of peptides.", required=True)
+    parser.add_argument("-o", "--out_file", help="Output file.", required=True)
     args = parser.parse_args()
     
-    main(args.fasta_f, args.out_f)
+    main(args)
 
 
 # """

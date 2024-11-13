@@ -1,10 +1,11 @@
 import random
 from PepLibGen.StructGen.aminoacids import all_aminos
 from tqdm import tqdm
+import argparse
+
 
 def generate_sequence(seq_len, canonical_percent, lowercase_percent):
     # Define the amino acids
-
     letter_list = []
     for each in all_aminos:
         letter_list+=(all_aminos[each]['Letter'])
@@ -40,7 +41,16 @@ def generate_sequence(seq_len, canonical_percent, lowercase_percent):
 
     return final_sequence
 
-def main(args):
+def main():
+
+    parser = argparse.ArgumentParser(description="Generate random peptide sequences")
+    parser.add_argument("-n", "--num_sequences", type=int, help="Number of sequences to generate")
+    parser.add_argument("-c", "--canonical_percent", type=float, default=0.9, help="Percentage of canonical amino acids")
+    parser.add_argument("-d", "--d_amino_percent", type=float, default=0.1, help="Percentage of lowercase amino acids")
+    parser.add_argument("-o", "--output", type=str, required=True, help="Output file name")
+    args = parser.parse_args()
+
+    
     num_sequences = args.num_sequences
     canonical_percent = args.canonical_percent
     lowercase_percent = args.d_amino_percent
@@ -49,18 +59,10 @@ def main(args):
     with open(output_file, 'w') as file:
         for i in tqdm(range(1, num_sequences + 1), desc="Generating sequences"):
 
-            seq_len = random.randint(1, 100)
+            seq_len = random.randint(10, 100)
             sequence = generate_sequence(seq_len, canonical_percent, lowercase_percent)
             cyclization = random.choice(['|HT', '|SS', '|SCNT', '|SCCT', '|SCSC'])
-            file.write(f">Seq{i}{cyclization}\n{sequence}\n")
+            file.write(">Seq" + str(i) + cyclization + "\n" + sequence + "\n")
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description="Generate random peptide sequences")
-    parser.add_argument("num_sequences", type=int, help="Number of sequences to generate")
-    parser.add_argument("--canonical_percent", type=float, default=0.9, help="Percentage of canonical amino acids")
-    parser.add_argument("--d_amino_percent", type=float, default=0.1, help="Percentage of lowercase amino acids")
-    parser.add_argument("--output", type=str, default='output.fasta', help="Output file name")
-    args = parser.parse_args()
-    
-    main(args)
+    main()
