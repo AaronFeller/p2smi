@@ -238,8 +238,8 @@ def pep_positions(linpepseq):
     return positions
 
 def constrained_peptide_smiles(peptideseq, pattern):
-    valid_codes = {'C': 'disulphide', 'Z': 'cterm', 'N': 'nterm', 'E': 'ester', 'X': ''}
-    smiles = "O"
+    valid_codes = {'C': 'disulphide', 'Z': 'cterm', 'N': 'nterm', 'E': 'ester', 'X': ''} # codes for type of constraint (X is no constraint)
+    smiles = "O" # start with O as the first oxygen atom
 
     if not pattern:
         return peptideseq, "", linear_peptide_smiles(peptideseq)
@@ -258,6 +258,18 @@ def constrained_peptide_smiles(peptideseq, pattern):
             smiles += return_smiles(resi)
         else:
             raise BondSpecError(f"{code} in pattern {pattern} not recognised")
+
+    # edit n-term or c-term depending on pattern
+    # remove all X in pattern
+    pattern_for_fixing = pattern.replace("X", "")
+    print(pattern_for_fixing)
+
+    if pattern_for_fixing == "SCN": # N acts as N term, which binds the CT
+        smiles = smiles[:-5] + "*(=O)" # removes (=O)O and adds *(=O) to cyclize to the C before
+    elif pattern_for_fixing == "SCE": # E is an ester, which binds the CT
+            smiles = smiles[:-5] + "*(=O)"
+    elif pattern_for_fixing == "SCZ": # Identifies sidechain to N term (Z is acting as C-term)
+            smiles = "N*" + smiles[1:] # replaces amino group (N) with N*
 
     bond_number = str(bond_counter(smiles) + 1)
     smiles = smiles.replace("*", bond_number)

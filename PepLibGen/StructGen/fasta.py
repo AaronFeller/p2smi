@@ -122,15 +122,16 @@ def main(args):
     outfile = args.out_file
     
     out_gen = (
-        StructGen.constrained_peptide_smiles(*pair)
-        for pair in process_constraints(fasta)
+        StructGen.constrained_peptide_smiles(*pair) for pair in process_constraints(fasta)
     )
+    
     StructGen.write_library(out_gen, outfile, write="text", write_to_file=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate peptides from a fasta file.")
     parser.add_argument("-i", "--input_fasta", help="Fasta file of peptides.", required=True)
     parser.add_argument("-o", "--out_file", help="Output file.", required=True)
+    
     args = parser.parse_args()
     
     main(args)
