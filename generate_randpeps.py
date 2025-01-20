@@ -1,5 +1,5 @@
 import random
-from PepLibGen.StructGen.aminoacids import all_aminos
+from p2smi.StructGen.aminoacids import all_aminos
 from tqdm import tqdm
 import argparse
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from PepLibGen.StructGen import synthrules
+from generate import synthrules
 
 
 class StructGenTestCases(unittest.TestCase):

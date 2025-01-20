@@ -7,7 +7,7 @@ Created on 22 Jul 2011
 Modified by: Aaron Feller (2025)
 """
 
-import StructGen
+import generate.smilesgen as smilesgen
 import argparse
 
 class InvalidConstraintError(Exception):
@@ -26,7 +26,9 @@ def parse_fasta(fasta_f):
                 if sequence:  # Yield previous sequence and identifier
                     yield sequence, constraint
                 sequence = ""
-                constraint = line.split("|")[-1] if "|" in line else line[1:]
+                # if line doesn't contain a constraint, leave it as empty string
+                if line.startswith(">") and "|" in line:
+                    constraint = line.split("|")[-1]
             else:
                 sequence += line
         if sequence:  # Yield the last sequence and identifier
@@ -39,15 +41,15 @@ def process_constraints(fasta_f):
     """
     error_string = "%s is not a valid constraint for peptide %s"
     constraint_functions = {
-        "SS": StructGen.can_ssbond,
-        "HT": StructGen.can_htbond,
-        "SCNT": StructGen.can_scntbond,
-        "SCCT": StructGen.can_scctbond,
-        "SCSC": StructGen.can_scscbond,
+        "SS": smilesgen.can_ssbond,
+        "HT": smilesgen.can_htbond,
+        "SCNT": smilesgen.can_scntbond,
+        "SCCT": smilesgen.can_scctbond,
+        "SCSC": smilesgen.can_scscbond,
     }
     for sequence, constraint in parse_fasta(fasta_f):
         # Check if constraint is valid
-        if constraint.upper() in StructGen.what_constraints(sequence):
+        if constraint.upper() in smilesgen.what_constraints(sequence):
             yield sequence, constraint
         # If constraint does not specify a full pattern, only a type,
         # try and generate the full pattern.
@@ -73,6 +75,8 @@ def process_constraints(fasta_f):
         elif not constraint:
             # Generate linear peptide
             yield sequence, ""
+        elif constraint == None:
+            yield sequence, ""
         else:
             raise InvalidConstraintError(error_string % (sequence, constraint))
 
@@ -84,10 +88,10 @@ def main(args):
     outfile = args.out_file
     
     out_gen = (
-        StructGen.constrained_peptide_smiles(*pair) for pair in process_constraints(fasta)
+        smilesgen.constrained_peptide_smiles(*pair) for pair in process_constraints(fasta)
     )
     
-    StructGen.write_library(out_gen, outfile, write="text", write_to_file=True)
+    smilesgen.write_library(out_gen, outfile, write="text", write_to_file=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate peptides from a fasta file.")

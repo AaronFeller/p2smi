@@ -174,7 +174,7 @@ def synth_pass(args, strict=False):
             return False
     except AttributeError:  # Tuple of names, not string
         # try:
-        from PepLibGen.StructGen import aminoacids as aa
+        from p2smi.StructGen import aminoacids as aa
 
         try:
             seq = "".join([aa.aminos[resi]["Letter"] for resi in seq])
