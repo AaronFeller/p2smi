@@ -7,7 +7,7 @@ Created on 22 Jul 2011
 Modified by: Aaron Feller (2025)
 """
 
-import generate.smilesgen as smilesgen
+import smilesgen as smilesgen
 import argparse
 
 class InvalidConstraintError(Exception):

@@ -2,100 +2,91 @@ import random
 import math
 import re
 import argparse
+from rdkit import Chem
 
+
+def is_valid_smiles(sequence):
+    """Checks if the given sequence is a valid SMILES string."""
+    mol = Chem.MolFromSmiles(sequence)
+    return mol is not None
 
 def add_n_methylation(sequence, methylation_percent=0.2):
-    """
-    Adds N-methylation to a percentage of peptidic bonds in a sequence.
-
-    Args:
-        sequence (str): The input peptide sequence in SMILES format.
-        methylation_percent (float): Percentage of peptidic bonds to methylate (default is 20%).
-
-    Returns:
-        str: The methylated peptide sequence.
-        int: Number of N-methylations applied.
-    """
-    num_peptidic_bonds = sequence.count('C(=O)N[C@')
+    """Adds N-methylation to a percentage of peptidic bonds in a sequence."""
+    num_peptidic_bonds = len(re.findall(r'C\(=O\)N\[C@', sequence))  
     num_methylate = math.ceil(num_peptidic_bonds * methylation_percent)
     peptidic_bond_positions = [m.start() for m in re.finditer(r'C\(=O\)N\[C@', sequence)]
-
-    methylated_seq = sequence
+    
     if num_methylate > 0 and peptidic_bond_positions:
-        methylated_positions = random.sample(peptidic_bond_positions, num_methylate)
-        for position in methylated_positions:
-            methylated_seq = (
-                methylated_seq[:position + 6] + '(C)' + methylated_seq[position + 6:]
-            )
+        methylated_positions = random.sample(peptidic_bond_positions, min(num_methylate, len(peptidic_bond_positions)))
+        for position in sorted(methylated_positions, reverse=True):
+            sequence = sequence[:position + 6] + '(C)' + sequence[position + 6:]  # Insert methylation
 
-    return methylated_seq, num_methylate
+    return sequence, num_methylate
 
 
 def add_pegylation(sequence):
-    """
-    Adds PEGylation to one free amine group in a sequence.
-
-    Args:
-        sequence (str): The input peptide sequence in SMILES format.
-
-    Returns:
-        str: The PEGylated peptide sequence.
-        str: The PEG fragment used.
-    """
-    PEG_fragment = 'O' + random.randint(1, 4) * 'CCO' + 'C'
+    """Adds PEGylation to one free amine group in a sequence."""
+    PEG_fragment = 'O' + ''.join(['CCO' for _ in range(random.randint(1, 4))]) + 'C'
     free_amine_positions = [m.start() for m in re.finditer(r'CN\)', sequence)]
 
     if not free_amine_positions:
-        raise ValueError("No free amine groups (CN) found for PEGylation.")
+        return sequence, None  # No PEGylation possible
 
     pegylated_position = random.choice(free_amine_positions)
-    pegylated_seq = (
-        sequence[:pegylated_position + 2] + PEG_fragment + sequence[pegylated_position + 2:]
-    )
+    pegylated_seq = sequence[:pegylated_position + 2] + PEG_fragment + sequence[pegylated_position + 2:]
 
     return pegylated_seq, PEG_fragment
 
 
-def process_file(input_file, output_file, methylation_percent, apply_methylation, apply_pegylation):
-    """
-    Processes a file containing peptide sequences in SMILES format, applies modifications,
-    and writes the modified sequences to a new file.
+def process_file(input_file, output_file, methylation_percent, apply_methylation, apply_pegylation, methylate_fraction, pegylate_fraction):
+    """Processes peptide sequences, applies modifications randomly based on set fractions, and writes output."""
 
-    Args:
-        input_file (str): Path to the input file.
-        output_file (str): Path to the output file.
-        methylation_percent (float): Percentage for N-methylation.
-        apply_methylation (bool): Whether to apply N-methylation.
-        apply_pegylation (bool): Whether to apply PEGylation.
-    """
-    with open(input_file, "r") as infile, open(output_file, "w") as outfile:
-        for line in infile:
-            # Skip empty lines
-            if not line.strip():
+    print(f"Processing file: {input_file}")
+    
+    with open(input_file, "r") as infile:
+        lines = [line.strip() for line in infile if line.strip()]
+
+    total_sequences = len(lines)
+    num_methylate_sequences = math.ceil(total_sequences * methylate_fraction)
+    num_pegylate_sequences = math.ceil(total_sequences * pegylate_fraction)
+
+    # Randomly select sequences to modify
+    methylate_indices = set(random.sample(range(total_sequences), num_methylate_sequences)) if apply_methylation else set()
+    pegylate_indices = set(random.sample(range(total_sequences), num_pegylate_sequences)) if apply_pegylation else set()
+
+    with open(output_file, "w") as outfile:
+        for i, line in enumerate(lines):
+            parts = line.split(": ", 1)
+            if len(parts) != 2:
+                print(f"[Warning] Skipping malformed line: {line}")
                 continue
 
-            # Split the header and sequence
-            header, sequence = line.strip().split(": ", 1)
-
+            header, sequence = parts
             modifications = []
 
-            # Apply N-methylation
-            if apply_methylation:
+            # Apply N-methylation if this sequence is selected
+            if apply_methylation and i in methylate_indices:
                 sequence, num_methylations = add_n_methylation(sequence, methylation_percent)
                 modifications.append(f"N-methylation({num_methylations})")
 
-            # Apply PEGylation
-            if apply_pegylation:
-                try:
-                    sequence, peg_fragment = add_pegylation(sequence)
+            # Apply PEGylation if this sequence is selected
+            if apply_pegylation and i in pegylate_indices:
+                sequence, peg_fragment = add_pegylation(sequence)
+                if peg_fragment:
                     modifications.append(f"PEGylation({peg_fragment})")
-                except ValueError as e:
+                else:
                     modifications.append("PEGylation(N/A)")
 
-            # Update the header with modifications
-            modified_header = f"{header} [{'-'.join(modifications)}]"
+            
+            # check sequence with RDkit
+            if not is_valid_smiles(sequence):
+                print(f"[Warning] Invalid SMILES sequence: {sequence}")
+                continue
+            
+            # Update header with modifications
+            modified_header = f"{header} [{'-'.join(modifications)}]" if modifications else header
 
-            # Write the modified sequence to the output file
+            # Write to output file
             outfile.write(f"{modified_header}: {sequence}\n")
 
 
@@ -106,9 +97,11 @@ if __name__ == "__main__":
     parser.add_argument("--n_methylation", action="store_true", help="Apply N-methylation to peptidic bonds.")
     parser.add_argument("--pegylation", action="store_true", help="Apply PEGylation to a free amine group.")
     parser.add_argument("--percent", type=float, default=0.2, help="Percentage for N-methylation (default: 20%).")
+    parser.add_argument("--methylate_fraction", type=float, default=0.2, help="Fraction of sequences to methylate (default: 100%).")
+    parser.add_argument("--pegylate_fraction", type=float, default=0.2, help="Fraction of sequences to PEGylate (default: 100%).")
+
     args = parser.parse_args()
-    
-    
+
     if not args.n_methylation and not args.pegylation:
         raise ValueError("At least one modification type must be specified (--n_methylation or --pegylation).")
 
@@ -117,5 +110,7 @@ if __name__ == "__main__":
         args.output_file,
         args.percent,
         args.n_methylation,
-        args.pegylation
+        args.pegylation,
+        args.methylate_fraction,
+        args.pegylate_fraction
     )

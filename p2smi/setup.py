@@ -5,6 +5,7 @@ setup(
     version="0.1.0",  # Version of your package
     author="Aaron Feller",
     author_email="aaronleefeller@gmail.com",
+    license="MIT",
     description="A toolkit for conversion of unnatural and natural single-letter amino acid strings (peptides/proteins) to SMILES strings",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

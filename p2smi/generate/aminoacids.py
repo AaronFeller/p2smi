@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Definitions and properties of amino-acids for Peptide Library Package"""
+"""Definitions and properties of amino-acids for p2smi"""
 
 # Natural Amino-acids:
 

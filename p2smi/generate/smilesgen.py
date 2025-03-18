@@ -3,7 +3,7 @@ import sys
 import os
 import operator
 import os.path as path
-from generate.aminoacids import all_aminos
+from aminoacids import all_aminos
 from rdkit import Chem
 from rdkit.Chem import Draw
 from rdkit.Chem import AllChem
