@@ -10,26 +10,34 @@ from rdkit.Chem import AllChem
 
 aminodata = all_aminos
 
+
 class CustomError(Exception):
     pass
+
 
 class NoCysteineError(CustomError):
     pass
 
+
 class BondSpecError(CustomError):
     pass
+
 
 class FormatError(CustomError):
     pass
 
+
 class UndefinedAminoError(CustomError):
     pass
+
 
 class UndefinedPropertyError(CustomError):
     pass
 
+
 class SmilesError(CustomError):
     pass
+
 
 def add_amino(name):
     if name in all_aminos and name not in aminodata:
@@ -38,37 +46,55 @@ def add_amino(name):
     else:
         raise UndefinedAminoError(f"{name} not recognised as valid amino acid")
 
+
 def remove_amino(name):
     if name in aminodata:
         del aminodata[name]
     else:
         raise UndefinedAminoError(f"{name} not found in amino acids")
 
+
 def print_possible_aminos():
     return list(all_aminos.keys())
+
 
 def print_included_aminos():
     return list(aminodata.keys())
 
+
 def return_available_residues(out="Letter"):
     return [properties[out] for properties in aminodata.values()]
 
+
 def return_constraint_resis(constraint_type):
-    return [name for name, properties in aminodata.items() if properties.get(constraint_type)]
+    return [
+        name
+        for name, properties in aminodata.items()
+        if properties.get(constraint_type)
+    ]
+
 
 def property_to_name(property, value):
     for name, properties in aminodata.items():
         if properties.get(property) == value:
             return name
-    raise UndefinedAminoError(f"Amino-acid matching value {value} for {property} not found")
+    raise UndefinedAminoError(
+        f"Amino-acid matching value {value} for {property} not found"
+    )
+
 
 def gen_all_pos_peptides(pepliblen):
     amino_keys = list(aminodata.keys())
     for pep in itertools.product(amino_keys, repeat=pepliblen):
         yield pep
 
+
 def gen_all_matching_peptides(pattern):
-    pattern = pattern.replace("x", "X") if isinstance(pattern, str) else ["X" if resi == "x" else resi for resi in pattern]
+    pattern = (
+        pattern.replace("x", "X")
+        if isinstance(pattern, str)
+        else ["X" if resi == "x" else resi for resi in pattern]
+    )
     amino_keys = list(aminodata.keys())
     for pep in itertools.product(amino_keys, repeat=pattern.count("X")):
         pep = list(pep)
@@ -83,9 +109,14 @@ def gen_all_matching_peptides(pattern):
                 outpep.append(pep.pop(0))
         yield outpep
 
+
 def can_ssbond(peptideseq):
     disulphides = return_constraint_resis("disulphide")
-    locs = [loc for loc, resi in enumerate(peptideseq) if resi in disulphides or property_to_name("Letter", resi) in disulphides]
+    locs = [
+        loc
+        for loc, resi in enumerate(peptideseq)
+        if resi in disulphides or property_to_name("Letter", resi) in disulphides
+    ]
     if len(locs) < 2:
         return False
     pos_pairs = sorted(
@@ -96,34 +127,57 @@ def can_ssbond(peptideseq):
     best_pair = pos_pairs[0]
     if best_pair[1] <= 2:
         return False
-    pattern = "SS" + "".join(["C" if i in best_pair[0] else "X" for i in range(len(peptideseq))])
+    pattern = "SS" + "".join(
+        ["C" if i in best_pair[0] else "X" for i in range(len(peptideseq))]
+    )
     return peptideseq, pattern
+
 
 def can_htbond(peptideseq):
     if len(peptideseq) >= 5 or len(peptideseq) == 2:
         return peptideseq, "HT"
     return False
 
+
 def can_scntbond(peptideseq, strict=False):
-    locs = [num + 3 for num, resi in enumerate(peptideseq[3:]) if resi in return_constraint_resis("cterm") or property_to_name("Letter", resi) in return_constraint_resis("cterm")]
+    locs = [
+        num + 3
+        for num, resi in enumerate(peptideseq[3:])
+        if resi in return_constraint_resis("cterm")
+        or property_to_name("Letter", resi) in return_constraint_resis("cterm")
+    ]
     if len(locs) == 0 or (len(locs) > 1 and strict):
         return False
     if not strict:
-        pattern = ["SC"] + ["Z" if num == locs[-1] else "X" for num, _ in enumerate(peptideseq)]
+        pattern = ["SC"] + [
+            "Z" if num == locs[-1] else "X" for num, _ in enumerate(peptideseq)
+        ]
         return peptideseq, "".join(pattern)
     return False
+
 
 def can_scctbond(peptideseq, strict=False):
     esters = return_constraint_resis("ester")
     nterms = return_constraint_resis("nterm")
-    locs = [(num, "N") for num, resi in enumerate(peptideseq[:-3]) if resi in nterms or property_to_name("Letter", resi) in nterms]
-    locs += [(num, "E") for num, resi in enumerate(peptideseq[:-3]) if resi in esters or property_to_name("Letter", resi) in esters]
+    locs = [
+        (num, "N")
+        for num, resi in enumerate(peptideseq[:-3])
+        if resi in nterms or property_to_name("Letter", resi) in nterms
+    ]
+    locs += [
+        (num, "E")
+        for num, resi in enumerate(peptideseq[:-3])
+        if resi in esters or property_to_name("Letter", resi) in esters
+    ]
     if len(locs) == 0 or (len(locs) > 1 and strict):
         return False
     if not strict:
-        pattern = ["SC"] + [locs[0][1] if num == locs[0][0] else "X" for num, _ in enumerate(peptideseq)]
+        pattern = ["SC"] + [
+            locs[0][1] if num == locs[0][0] else "X" for num, _ in enumerate(peptideseq)
+        ]
         return peptideseq, "".join(pattern)
     return False
+
 
 def can_scscbond(peptideseq, strict=False):
     nterms = return_constraint_resis("nterm")
@@ -131,27 +185,67 @@ def can_scscbond(peptideseq, strict=False):
     esters = return_constraint_resis("ester")
     locs = {"nterms": [], "cterms": [], "esters": []}
     for loc, resi in enumerate(peptideseq):
-        for bondtype, bondname in [(nterms, "nterms"), (cterms, "cterms"), (esters, "esters")]:
+        for bondtype, bondname in [
+            (nterms, "nterms"),
+            (cterms, "cterms"),
+            (esters, "esters"),
+        ]:
             if resi in bondtype or property_to_name("Letter", resi) in bondtype:
                 locs[bondname].append(loc)
     if not locs["cterms"] or not (locs["nterms"] or locs["esters"]):
         return False
-    possible_pairs = [(pair, abs(pair[0] - pair[1])) for pair in itertools.product(locs["cterms"], locs["nterms"] + locs["esters"]) if abs(pair[0] - pair[1]) >= 2]
+    possible_pairs = [
+        (pair, abs(pair[0] - pair[1]))
+        for pair in itertools.product(locs["cterms"], locs["nterms"] + locs["esters"])
+        if abs(pair[0] - pair[1]) >= 2
+    ]
     if not possible_pairs:
         return False
     best_pair = max(possible_pairs, key=operator.itemgetter(1))[0]
-    pattern = "SC" + "".join(["Z" if num == best_pair[0] else "N" if num == best_pair[1] and best_pair[1] in locs["nterms"] else "E" if num == best_pair[1] and best_pair[1] in locs["esters"] else "X" for num, _ in enumerate(peptideseq)])
+    pattern = "SC" + "".join(
+        [
+            (
+                "Z"
+                if num == best_pair[0]
+                else (
+                    "N"
+                    if num == best_pair[1] and best_pair[1] in locs["nterms"]
+                    else (
+                        "E"
+                        if num == best_pair[1] and best_pair[1] in locs["esters"]
+                        else "X"
+                    )
+                )
+            )
+            for num, _ in enumerate(peptideseq)
+        ]
+    )
     return peptideseq, pattern
 
+
 def what_constraints(peptideseq):
-    return [result for func in [can_ssbond, can_htbond, can_scctbond, can_scntbond, can_scscbond] if (result := func(peptideseq))]
+    return [
+        result
+        for func in [can_ssbond, can_htbond, can_scctbond, can_scntbond, can_scscbond]
+        if (result := func(peptideseq))
+    ]
+
 
 def aaletter2aaname(aaletter):
     for name, properties in all_aminos.items():
         if properties["Letter"] == aaletter:
             return name
 
-def gen_library_strings(liblen, ssbond=False, htbond=False, scctbond=False, scntbond=False, scscbond=False, linear=False):
+
+def gen_library_strings(
+    liblen,
+    ssbond=False,
+    htbond=False,
+    scctbond=False,
+    scntbond=False,
+    scscbond=False,
+    linear=False,
+):
     filterfuncs = []
     if ssbond:
         filterfuncs.append(can_ssbond)
@@ -165,11 +259,12 @@ def gen_library_strings(liblen, ssbond=False, htbond=False, scctbond=False, scnt
         filterfuncs.append(can_scscbond)
     for sequence in gen_all_pos_peptides(liblen):
         for func in filterfuncs:
-            if (trialpeptide := func(sequence)):
+            if trialpeptide := func(sequence):
                 yield trialpeptide
     if linear:
         for peptide in gen_all_pos_peptides(liblen):
             yield (peptide, "")
+
 
 def gen_library_from_file(filepath, ignore_errors=False):
     with open(filepath) as peptides:
@@ -189,12 +284,16 @@ def gen_library_from_file(filepath, ignore_errors=False):
                 else:
                     raise
 
+
 def nmethylate_peptide_smiles(smiles):
     mol = Chem.MolFromSmiles(smiles)
     n_pattern = Chem.MolFromSmarts("[$([Nh1](C)C(=O)),$([NH2]CC=O)]")
     methylated_pattern = Chem.MolFromSmarts("N(C)")
-    rmol = AllChem.ReplaceSubstructs(mol, n_pattern, methylated_pattern, replaceAll=True)
+    rmol = AllChem.ReplaceSubstructs(
+        mol, n_pattern, methylated_pattern, replaceAll=True
+    )
     return Chem.MolToSmiles(rmol[0], isomericSmiles=True)
+
 
 def nmethylate_peptides(structs):
     for struct in structs:
@@ -202,8 +301,10 @@ def nmethylate_peptides(structs):
         if smiles:
             yield seq, bond_def, nmethylate_peptide_smiles(smiles)
 
+
 def return_smiles(resi):
     return return_constrained_smiles(resi, "SMILES")
+
 
 def return_constrained_smiles(resi, constraint):
     try:
@@ -217,6 +318,7 @@ def return_constrained_smiles(resi, constraint):
             except UndefinedAminoError:
                 raise UndefinedAminoError(f"{resi} not recognised as amino acid")
 
+
 def linear_peptide_smiles(peptideseq):
     if not peptideseq:
         return None
@@ -225,8 +327,10 @@ def linear_peptide_smiles(peptideseq):
         combsmiles = combsmiles[:-1] + return_smiles(resi)
     return combsmiles
 
+
 def bond_counter(peptidesmiles):
     return max([int(num) for num in peptidesmiles if num.isdigit()], default=0)
+
 
 def pep_positions(linpepseq):
     positions = []
@@ -236,9 +340,16 @@ def pep_positions(linpepseq):
         location += len(return_smiles(resi)) - 1
     return positions
 
+
 def constrained_peptide_smiles(peptideseq, pattern):
-    valid_codes = {'C': 'disulphide', 'Z': 'cterm', 'N': 'nterm', 'E': 'ester', 'X': ''} # codes for type of constraint (X is no constraint)
-    smiles = "O" # start with O as the first oxygen atom
+    valid_codes = {
+        "C": "disulphide",
+        "Z": "cterm",
+        "N": "nterm",
+        "E": "ester",
+        "X": "",
+    }  # codes for type of constraint (X is no constraint)
+    smiles = "O"  # start with O as the first oxygen atom
 
     if not pattern:
         return peptideseq, "", linear_peptide_smiles(peptideseq)
@@ -252,7 +363,11 @@ def constrained_peptide_smiles(peptideseq, pattern):
     for resi, code in zip(peptideseq, pattern[2:]):
         smiles = smiles[:-1]
         if code in valid_codes:
-            smiles += return_constrained_smiles(resi, valid_codes[code]) if valid_codes[code] else return_smiles(resi)
+            smiles += (
+                return_constrained_smiles(resi, valid_codes[code])
+                if valid_codes[code]
+                else return_smiles(resi)
+            )
         elif code == "X":
             smiles += return_smiles(resi)
         else:
@@ -263,12 +378,16 @@ def constrained_peptide_smiles(peptideseq, pattern):
     pattern_for_fixing = pattern.replace("X", "")
     # print(pattern_for_fixing)
 
-    if pattern_for_fixing == "SCN": # N acts as N term, which binds the CT
-        smiles = smiles[:-5] + "*(=O)" # removes (=O)O and adds *(=O) to cyclize to the C before
-    elif pattern_for_fixing == "SCE": # E is an ester, which binds the CT
-            smiles = smiles[:-5] + "*(=O)"
-    elif pattern_for_fixing == "SCZ": # Identifies sidechain to N term (Z is acting as C-term)
-            smiles = "N*" + smiles[1:] # replaces amino group (N) with N*
+    if pattern_for_fixing == "SCN":  # N acts as N term, which binds the CT
+        smiles = (
+            smiles[:-5] + "*(=O)"
+        )  # removes (=O)O and adds *(=O) to cyclize to the C before
+    elif pattern_for_fixing == "SCE":  # E is an ester, which binds the CT
+        smiles = smiles[:-5] + "*(=O)"
+    elif (
+        pattern_for_fixing == "SCZ"
+    ):  # Identifies sidechain to N term (Z is acting as C-term)
+        smiles = "N*" + smiles[1:]  # replaces amino group (N) with N*
 
     bond_number = str(bond_counter(smiles) + 1)
     smiles = smiles.replace("*", bond_number)
@@ -276,8 +395,15 @@ def constrained_peptide_smiles(peptideseq, pattern):
     return peptideseq, pattern, smiles
 
 
-
-def gen_structs_from_seqs(sequences, ssbond=False, htbond=False, scctbond=False, scntbond=False, scscbond=False, linear=False):
+def gen_structs_from_seqs(
+    sequences,
+    ssbond=False,
+    htbond=False,
+    scctbond=False,
+    scntbond=False,
+    scscbond=False,
+    linear=False,
+):
     funcs = [
         (ssbond, can_ssbond),
         (htbond, can_htbond),
@@ -293,12 +419,24 @@ def gen_structs_from_seqs(sequences, ssbond=False, htbond=False, scctbond=False,
         if linear:
             yield (seq, "", linear_peptide_smiles(seq))
 
-def gen_library_structs(liblen, ssbond=False, htbond=False, scctbond=False, scntbond=False, scscbond=False, linear=False):
-    for peptideseq, bond_def in gen_library_strings(liblen, ssbond, htbond, scctbond, scntbond, scscbond, linear):
+
+def gen_library_structs(
+    liblen,
+    ssbond=False,
+    htbond=False,
+    scctbond=False,
+    scntbond=False,
+    scscbond=False,
+    linear=False,
+):
+    for peptideseq, bond_def in gen_library_strings(
+        liblen, ssbond, htbond, scctbond, scntbond, scscbond, linear
+    ):
         if bond_def == "":
             yield (peptideseq, "", linear_peptide_smiles(peptideseq))
         else:
             yield constrained_peptide_smiles(peptideseq, bond_def)
+
 
 def filtered_output(output, filterfuncs, key=None):
     for out_item in output:
@@ -308,6 +446,7 @@ def filtered_output(output, filterfuncs, key=None):
         else:
             if all(func(out_item) for func in filterfuncs):
                 yield out_item
+
 
 def get_constraint_type(bond_def):
     type_id, defi = bond_def[:2], bond_def[2:]
@@ -326,6 +465,7 @@ def get_constraint_type(bond_def):
                 return "SCSC"
     raise BondSpecError(f"{bond_def} not recognised as valid bond_def")
 
+
 def count_constraint_types(inlist, ignore_errors=False):
     count_dict = {"linear": 0, "SS": 0, "HT": 0, "SCSC": 0, "SCCT": 0, "SCNT": 0}
     for pep in inlist:
@@ -338,6 +478,7 @@ def count_constraint_types(inlist, ignore_errors=False):
                 raise
     return count_dict
 
+
 def save_3Dmolecule(sequence, bond_def):
     fname = f"{''.join(sequence)}_{bond_def}.sdf"
     _, _, smiles = constrained_peptide_smiles(sequence, bond_def)
@@ -348,7 +489,17 @@ def save_3Dmolecule(sequence, bond_def):
     writer.write(mol)
     return fname
 
-def write_molecule(smiles, peptideseq, bond_def, outfldr, type="sdf", write="structure", return_struct=False, new_folder=True):
+
+def write_molecule(
+    smiles,
+    peptideseq,
+    bond_def,
+    outfldr,
+    type="sdf",
+    write="structure",
+    return_struct=False,
+    new_folder=True,
+):
     twodfolder = threedfolder = outfldr
     if not return_struct and new_folder:
         twodfolder = path.join(outfldr, "2D-Files")
@@ -386,6 +537,7 @@ def write_molecule(smiles, peptideseq, bond_def, outfldr, type="sdf", write="str
         raise TypeError(f'"write" must be set to "draw" or "structure", got {write}')
     return True
 
+
 def write_library(inputlist, outloc, write="text", minimise=False, write_to_file=False):
     count = 0
     if write == "text":
@@ -412,12 +564,15 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
                         name = peptideseq + bond_def
                     except TypeError:
                         try:
-                            name = "".join([aminos[resi]["Letter"] for resi in peptideseq]) + bond_def
+                            name = (
+                                "".join([aminos[resi]["Letter"] for resi in peptideseq])
+                                + bond_def
+                            )
                         except KeyError:
                             name = ",".join(map(str, peptideseq)) + bond_def
                     mol.SetProp("_Name", name)
                     molstr = Chem.MolToMolBlock(mol)
-                    out.write(molstr + '\n$$$$\n')
+                    out.write(molstr + "\n$$$$\n")
                     count += 1
         else:
             for peptide in inputlist:
@@ -431,12 +586,14 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
         raise TypeError(f'"write" must be set to "draw" or "structure", got {write}')
     return count
 
+
 def main(pattern, out_file):
     print(f"Writing all peptides for pattern {pattern}")
     out_f = f"{out_file}.sdf"
     peptides = gen_all_matching_peptides(pattern)
     structures = gen_structs_from_seqs(peptides, True, True, True, True, True, True)
     write_library(structures, out_f, "structure", False, True)
+
 
 if __name__ == "__main__":
     main(*sys.argv[1:], sys.argv[0])

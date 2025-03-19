@@ -11,14 +11,17 @@ Uses RDKit.
 from rdkit import Chem
 from rdkit.Chem import Crippen, Lipinski, Descriptors, rdMolDescriptors, rdmolops
 
+
 class SmilesError(Exception):
     pass
+
 
 def log_partition_coefficient(smiles):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise SmilesError(f"{smiles} is not a valid SMILES string")
     return Crippen.MolLogP(mol)
+
 
 def lipinski_trial(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -53,9 +56,11 @@ def lipinski_trial(smiles):
 
     return passed, failed
 
+
 def lipinski_pass(smiles):
     _, failed = lipinski_trial(smiles)
     return not failed
+
 
 def molecular_formula(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -63,11 +68,13 @@ def molecular_formula(smiles):
         raise SmilesError(f"{smiles} is not a valid SMILES string")
     return rdMolDescriptors.CalcMolFormula(mol)
 
+
 def tpsa(smiles):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise SmilesError(f"{smiles} is not a valid SMILES string")
     return Descriptors.TPSA(mol)
+
 
 def molecule_summary(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -86,15 +93,18 @@ def molecule_summary(smiles):
         "Fraction Csp3": round(rdMolDescriptors.CalcFractionCSP3(mol), 3),
         "Heavy Atoms": mol.GetNumHeavyAtoms(),
         "Formal Charge": rdmolops.GetFormalCharge(mol),
-        "Lipinski pass": lipinski_pass(smiles)
+        "Lipinski pass": lipinski_pass(smiles),
     }
     return summary
+
 
 if __name__ == "__main__":
     import argparse
     import json
 
-    parser = argparse.ArgumentParser(description="Analyze SMILES strings for molecular properties.")
+    parser = argparse.ArgumentParser(
+        description="Analyze SMILES strings for molecular properties."
+    )
     parser.add_argument("smiles", type=str, help="SMILES string of the molecule")
     args = parser.parse_args()
 

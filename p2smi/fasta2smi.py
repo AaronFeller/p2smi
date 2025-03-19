@@ -6,8 +6,10 @@ Original by Fergal; modified by Aaron Feller (2025)
 import argparse
 import p2smi.utilities.smilesgen as smilesgen
 
+
 class InvalidConstraintError(Exception):
     pass
+
 
 def parse_fasta(fasta_file):
     """
@@ -26,6 +28,7 @@ def parse_fasta(fasta_file):
                 sequence += line
         if sequence:
             yield sequence, constraint
+
 
 def constraint_resolver(sequence, constraint):
     """
@@ -46,7 +49,9 @@ def constraint_resolver(sequence, constraint):
         result = constraint_functions[constraint.upper()](sequence)
         return result or (sequence, "")
     elif constraint.upper() == "SC":
-        for func in [constraint_functions[k] for k in constraint_functions if "SC" in k]:
+        for func in [
+            constraint_functions[k] for k in constraint_functions if "SC" in k
+        ]:
             result = func(sequence)
             if result:
                 return result
@@ -56,11 +61,13 @@ def constraint_resolver(sequence, constraint):
     else:
         raise InvalidConstraintError(f"{sequence} has invalid constraint {constraint}")
 
+
 def process_constraints(fasta_file):
     """
     Processes constraints for all sequences in the FASTA file.
     """
     return (constraint_resolver(seq, constr) for seq, constr in parse_fasta(fasta_file))
+
 
 def generate_3d_structures(input_fasta, out_file):
     """
@@ -68,18 +75,25 @@ def generate_3d_structures(input_fasta, out_file):
     """
     resolved_sequences = process_constraints(input_fasta)
     smilesgen.write_library(
-        (smilesgen.constrained_peptide_smiles(seq, constr) for seq, constr in resolved_sequences),
+        (
+            smilesgen.constrained_peptide_smiles(seq, constr)
+            for seq, constr in resolved_sequences
+        ),
         out_file,
         write="text",
-        write_to_file=True
+        write_to_file=True,
     )
+
 
 def main():
     parser = argparse.ArgumentParser(description="Generate peptides from a FASTA file.")
-    parser.add_argument("-i", "--input_fasta", required=True, help="FASTA file of peptides.")
+    parser.add_argument(
+        "-i", "--input_fasta", required=True, help="FASTA file of peptides."
+    )
     parser.add_argument("-o", "--out_file", required=True, help="Output file.")
     args = parser.parse_args()
     generate_3d_structures(args.input_fasta, args.out_file)
+
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,7 @@
 import subprocess
 import sys
 
+
 def run_tests():
     test_files = [
         "tests/test_chemMods.py",
@@ -13,7 +14,11 @@ def run_tests():
 
     for test_file in test_files:
         print(f"Running {test_file}...")
-        result = subprocess.run([sys.executable, "-m", "pytest", test_file, "-v"], capture_output=True, text=True)
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", test_file, "-v"],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             print(f"{test_file} passed.\n")
@@ -23,6 +28,7 @@ def run_tests():
             print("Errors:\n", result.stderr)
 
     print("All tests completed.")
+
 
 if __name__ == "__main__":
     run_tests()
