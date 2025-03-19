@@ -1,0 +1,10 @@
+# Python cache & build artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+p2smi.egg-info/
+build/
+dist/
+
+# Ignore local scripts or files you don't want tracked
+aa_converter.py
