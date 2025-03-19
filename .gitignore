@@ -8,6 +8,7 @@ dist/
 notebooks/
 manuscript/
 data/
+.ruff_cache/
 
 # Ignore local scripts or files you don't want tracked
 aa_converter.py
