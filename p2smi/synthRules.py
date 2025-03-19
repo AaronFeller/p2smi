@@ -1,4 +1,5 @@
 import re
+
 from rdkit import Chem
 from rdkit.Chem import Crippen
 
@@ -86,7 +87,8 @@ def collect_synthesis_issues(smiles, seq):
 
 
 def evaluate_line(line):
-    """Parse a line of format `sequence-cyclization: smiles`, run checks, return issues or True."""
+    """Parse a line of format `sequence-cyclization: smiles`,
+    run checks, return issues or True."""
     try:
         seq_part, smiles = line.strip().split(": ", 1)
         sequence, *_ = seq_part.split("-", 1)
@@ -98,7 +100,8 @@ def evaluate_line(line):
 
 
 def evaluate_file(input_file, output_file=None):
-    """Run synthesis checks on each line in a file and optionally write the results."""
+    """Run synthesis checks on each line in a file
+    and optionally write the results."""
     results = []
     with open(input_file, "r") as f:
         for line in f:
@@ -115,7 +118,7 @@ def evaluate_file(input_file, output_file=None):
     print("Results:")
     for line, result in results:
         if result is True:
-            print(f"PASS")
+            print("PASS")
         else:
             print(f"FAIL: {result}")
     return results
@@ -128,7 +131,10 @@ if __name__ == "__main__":
         description="Evaluate peptide synthesis feasibility from file."
     )
     parser.add_argument(
-        "-i", "--input_file", required=True, help="Input file with peptide-smiles lines"
+        "-i",
+        "--input_file",
+        required=True,
+        help="Input file with peptide-smiles lines",
     )
     parser.add_argument(
         "-o", "--output_file", help="Optional output file to write results"

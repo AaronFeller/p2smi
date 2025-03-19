@@ -4,6 +4,7 @@ Original by Fergal; modified by Aaron Feller (2025)
 """
 
 import argparse
+
 import p2smi.utilities.smilesgen as smilesgen
 
 
@@ -32,7 +33,8 @@ def parse_fasta(fasta_file):
 
 def constraint_resolver(sequence, constraint):
     """
-    Resolves constraints for a sequence using available functions or generates fallback structures.
+    Resolves constraints for a sequence using available functions
+    or generates fallback structures.
     """
     constraint_functions = {
         "SS": smilesgen.can_ssbond,

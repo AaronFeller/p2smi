@@ -1,7 +1,8 @@
-import random
-import math
-import re
 import argparse
+import math
+import random
+import re
+
 from rdkit import Chem
 
 
@@ -15,7 +16,8 @@ def add_n_methylation(sequence, methylation_residue_fraction):
     num_to_methylate = math.ceil(len(positions) * methylation_residue_fraction)
 
     for pos in sorted(
-        random.sample(positions, min(num_to_methylate, len(positions))), reverse=True
+        random.sample(positions, min(num_to_methylate, len(positions))),
+        reverse=True,
     ):
         sequence = sequence[: pos + 6] + "(C)" + sequence[pos + 6 :]
     return sequence, num_to_methylate
@@ -51,7 +53,7 @@ def modify_sequence(sequence, methylate, pegylate, nmeth_residues):
             number_of_peg_units = peg.count("CCO")
             modifications.append(f"PEGylation({number_of_peg_units})")
         else:
-            modifications.append(f"PEGylation('N/A')")
+            modifications.append("PEGylation('N/A')")
     return sequence, modifications
 
 
@@ -97,7 +99,7 @@ def process_file(input_file, output_file, peg_rate, nmeth_rate, nmeth_residues):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Modify peptide sequences with PEGylation and N-methylation."
+        description=("Modify peptide sequences with" "PEGylation and N-methylation.")
     )
     parser.add_argument("-i", "--input_file", required=True, help="Input file path.")
     parser.add_argument("-o", "--output_file", required=True, help="Output file path.")

@@ -2,14 +2,22 @@
 """
 Chemical data about a molecule.
 
-Molecules are defined by SMILES strings. Computes logP, Lipinski's rules, molecular formula,
-TPSA, rotatable bonds, ring count, fraction Csp3, heavy atom count, and formal charge.
+Molecules are defined by SMILES strings.
+Computes logP, Lipinski's rules, molecular formula,
+TPSA, rotatable bonds, ring count, fraction Csp3,
+heavy atom count, and formal charge.
 
 Uses RDKit.
 """
 
 from rdkit import Chem
-from rdkit.Chem import Crippen, Lipinski, Descriptors, rdMolDescriptors, rdmolops
+from rdkit.Chem import (
+    Crippen,
+    Descriptors,
+    Lipinski,
+    rdMolDescriptors,
+    rdmolops,
+)
 
 
 class SmilesError(Exception):

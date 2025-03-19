@@ -1,12 +1,13 @@
 import itertools
-import sys
-import os
 import operator
+import os
 import os.path as path
-from p2smi.utilities.aminoacids import all_aminos
+import sys
+
 from rdkit import Chem
-from rdkit.Chem import Draw
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, Draw
+
+from p2smi.utilities.aminoacids import all_aminos
 
 aminodata = all_aminos
 
@@ -226,7 +227,13 @@ def can_scscbond(peptideseq, strict=False):
 def what_constraints(peptideseq):
     return [
         result
-        for func in [can_ssbond, can_htbond, can_scctbond, can_scntbond, can_scscbond]
+        for func in [
+            can_ssbond,
+            can_htbond,
+            can_scctbond,
+            can_scntbond,
+            can_scscbond,
+        ]
         if (result := func(peptideseq))
     ]
 
@@ -274,7 +281,7 @@ def gen_library_from_file(filepath, ignore_errors=False):
             try:
                 sequence, bond_def = map(str.strip, line.split(";"))
                 if len(sequence.split(",")) == 1 and sequence not in all_aminos:
-                    sequence = [aaletter2aaname(l) for l in sequence]
+                    sequence = [aaletter2aaname(letter) for letter in sequence]
                 else:
                     sequence = sequence.split(",")
                 yield constrained_peptide_smiles(sequence, bond_def)
@@ -467,7 +474,14 @@ def get_constraint_type(bond_def):
 
 
 def count_constraint_types(inlist, ignore_errors=False):
-    count_dict = {"linear": 0, "SS": 0, "HT": 0, "SCSC": 0, "SCCT": 0, "SCNT": 0}
+    count_dict = {
+        "linear": 0,
+        "SS": 0,
+        "HT": 0,
+        "SCSC": 0,
+        "SCCT": 0,
+        "SCNT": 0,
+    }
     for pep in inlist:
         try:
             count_dict[get_constraint_type(pep[1])] += 1
@@ -510,7 +524,9 @@ def write_molecule(
         name = peptideseq + bond_def
     except TypeError:
         try:
-            name = "".join([aminos[resi]["Letter"] for resi in peptideseq]) + bond_def
+            name = (
+                "".join([aminodata[resi]["Letter"] for resi in peptideseq]) + bond_def
+            )
         except KeyError:
             name = ",".join(peptideseq) + bond_def
 
@@ -565,7 +581,9 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
                     except TypeError:
                         try:
                             name = (
-                                "".join([aminos[resi]["Letter"] for resi in peptideseq])
+                                "".join(
+                                    [aminodata[resi]["Letter"] for resi in peptideseq]
+                                )
                                 + bond_def
                             )
                         except KeyError:

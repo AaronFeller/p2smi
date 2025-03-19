@@ -1,10 +1,9 @@
-import re
 from p2smi.chemMods import (
-    is_valid_smiles,
     add_n_methylation,
     add_pegylation,
-    parse_input_lines,
+    is_valid_smiles,
     modify_sequence,
+    parse_input_lines,
     process_sequences,
 )
 
@@ -29,7 +28,11 @@ def test_add_pegylation_adds_peg():
 
 
 def test_parse_input_lines_handles_good_and_bad_lines():
-    lines = ["peptide1: C1CCCCC1", "malformed line without colon", "peptide2: C1CCNCC1"]
+    lines = [
+        "peptide1: C1CCCCC1",
+        "malformed line without colon",
+        "peptide2: C1CCNCC1",
+    ]
     parsed = list(parse_input_lines(lines))
     assert parsed[0] == ("peptide1", "C1CCCCC1")
     assert parsed[1] == ("[Malformed line]", None)

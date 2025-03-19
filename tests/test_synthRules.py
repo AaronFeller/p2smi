@@ -1,11 +1,10 @@
-import pytest
 from p2smi.synthRules import (
-    evaluate_line,
-    collect_synthesis_issues,
-    check_forbidden_motifs,
     check_charge,
     check_cysteine_content,
+    check_forbidden_motifs,
+    collect_synthesis_issues,
     evaluate_file,
+    evaluate_line,
 )
 
 
@@ -38,21 +37,23 @@ def test_collect_synthesis_issues_catches_hydrophobicity():
 
 
 def test_evaluate_line_pass_case():
-    line = "A,S,K-LINEAR: N[C@@H](C)C(=O)N[C@@H](CCCCN)C(=O)N[C@@H](C(C)C)C(=O)O"
+    line = "A,S,K-LINEAR: N[C@@H](C)C(=O)N[C@@H]" "(CCCCN)C(=O)N[C@@H](C(C)C)C(=O)O"
     result = evaluate_line(line)
     assert result[1] is True
 
 
 def test_evaluate_line_fail_case_forbidden_motif():
-    line = "P,P,P-LINEAR: N[C@@H](C)C(=O)N[C@@H](C(C)C)C(=O)N[C@@H](C(C)C)C(=O)O"
+    line = "P,P,P-LINEAR: N[C@@H](C)C(=O)N[C@@H]" "(C(C)C)C(=O)N[C@@H](C(C)C)C(=O)O"
     result = evaluate_line(line)
     assert any("prolines" in issue.lower() for issue in result[1])
 
 
 def test_evaluate_file(tmp_path):
     test_content = (
-        "A,S,K-LINEAR: N[C@@H](C)C(=O)N[C@@H](CCCCN)C(=O)N[C@@H](C(C)C)C(=O)O\n"
-        "P,P,P-LINEAR: N[C@@H](C)C(=O)N[C@@H](C(C)C)C(=O)N[C@@H](C(C)C)C(=O)O"
+        "A,S,K-LINEAR: N[C@@H](C)C(=O)N[C@@H]"
+        "(CCCCN)C(=O)N[C@@H](C(C)C)C(=O)O\n"
+        "P,P,P-LINEAR: N[C@@H](C)C(=O)N[C@@H]"
+        "(C(C)C)C(=O)N[C@@H](C(C)C)C(=O)O"
     )
     test_file = tmp_path / "test_input.txt"
     output_file = tmp_path / "test_output.txt"

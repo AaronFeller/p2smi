@@ -1,11 +1,9 @@
-import re
-import pytest
 from p2smi.genPeps import (
-    calculate_amino_acid_counts,
+    CONSTRAINTS,
     build_sequence,
+    calculate_amino_acid_counts,
     generate_sequences,
     get_amino_acid_lists,
-    CONSTRAINTS,
 )
 
 

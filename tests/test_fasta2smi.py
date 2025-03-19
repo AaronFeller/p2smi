@@ -1,13 +1,13 @@
 import pytest
-from p2smi.fasta2smi import (
-    parse_fasta,
-    constraint_resolver,
-    process_constraints,
-    InvalidConstraintError,
-)
 
 # Mock smilesgen
 import p2smi.utilities.smilesgen as smilesgen
+from p2smi.fasta2smi import (
+    InvalidConstraintError,
+    constraint_resolver,
+    parse_fasta,
+    process_constraints,
+)
 
 smilesgen.can_ssbond = lambda seq: (seq, "SS")
 smilesgen.can_htbond = lambda seq: (seq, "HT")

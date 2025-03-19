@@ -1,5 +1,6 @@
-import random
 import argparse
+import random
+
 from p2smi.utilities.aminoacids import all_aminos
 
 
@@ -78,7 +79,7 @@ def generate_sequences(
     amino_lists = get_amino_acid_lists()
 
     def make_sequence(i):
-        seq_id = f"seq_{i+1}"
+        seq_id = f"seq_{i + 1}"
         constraint = random.choice(constraints) if constraints else None
         if constraint:
             seq_id += f"|{constraint}"

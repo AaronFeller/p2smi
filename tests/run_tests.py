@@ -13,7 +13,7 @@ def run_tests():
     ]
 
     for test_file in test_files:
-        print(f"Running {test_file}...")
+        print(f"Running {test_file}...\n")
         result = subprocess.run(
             [sys.executable, "-m", "pytest", test_file, "-v"],
             capture_output=True,

@@ -1,12 +1,13 @@
 import pytest
+
 from p2smi.chemProps import (
-    log_partition_coefficient,
-    lipinski_trial,
-    lipinski_pass,
-    molecular_formula,
-    tpsa,
-    molecule_summary,
     SmilesError,
+    lipinski_pass,
+    lipinski_trial,
+    log_partition_coefficient,
+    molecular_formula,
+    molecule_summary,
+    tpsa,
 )
 
 
