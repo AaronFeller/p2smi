@@ -3,11 +3,10 @@ import sys
 import os
 import operator
 import os.path as path
-from aminoacids import all_aminos
+from p2smi.utilities.aminoacids import all_aminos
 from rdkit import Chem
 from rdkit.Chem import Draw
 from rdkit.Chem import AllChem
-from tqdm import tqdm
 
 aminodata = all_aminos
 
@@ -262,7 +261,7 @@ def constrained_peptide_smiles(peptideseq, pattern):
     # edit n-term or c-term depending on pattern
     # remove all X in pattern
     pattern_for_fixing = pattern.replace("X", "")
-    print(pattern_for_fixing)
+    # print(pattern_for_fixing)
 
     if pattern_for_fixing == "SCN": # N acts as N term, which binds the CT
         smiles = smiles[:-5] + "*(=O)" # removes (=O)O and adds *(=O) to cyclize to the C before
@@ -391,7 +390,7 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
     count = 0
     if write == "text":
         with open(outloc, "w") as f:
-            for peptide in tqdm(inputlist, desc="Processing peptides"):
+            for peptide in inputlist:
                 try:
                     seq, bond_def, smiles = peptide
                     bond_def = bond_def if bond_def else "linear"

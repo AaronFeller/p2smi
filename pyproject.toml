@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "p2smi"
+version = "0.1.0"
+description = "A package for converting peptide FASTA to SMILES strings and calculating molecular properties."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name="Aaron Feller", email="aaronleefeller@gmail.com" }]
+dependencies = ["rdkit", "numpy"]
+
+[project.scripts]
+generate-peptides = "p2smi.genPeps:main"
+fasta2smi = "p2smi.fasta2smi:main"
+modify-smiles = "p2smi.chemMods:main"
+smiles-props = "p2smi.chemProps:main"
+
+[project.optional-dependencies]
+dev = ["pytest",
+        "black",
+        "flake8",
+        "pytest-cov",
+        "pre-commit"]
