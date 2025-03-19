@@ -1,8 +1,10 @@
-**/*.pyc
+# Python cache & build artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+p2smi.egg-info/
 build/
-*.bak
-cyclops_py39/
-PDB_files/
-out/
-input/
-data/
+dist/
+
+# Ignore local scripts or files you don't want tracked
+aa_converter.py
