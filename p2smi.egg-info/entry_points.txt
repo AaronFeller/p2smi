@@ -1,5 +1,0 @@
-[console_scripts]
-fasta2smi = p2smi.fasta2smi:main
-generate-peptides = p2smi.genPeps:main
-modify-smiles = p2smi.chemMods:main
-smiles-props = p2smi.chemProps:main
