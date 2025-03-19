@@ -10,12 +10,14 @@ readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name="Aaron Feller", email="aaronleefeller@gmail.com" }]
 dependencies = ["rdkit", "numpy"]
+requires-python = ">=3.9"
 
 [project.scripts]
 generate-peptides = "p2smi.genPeps:main"
 fasta2smi = "p2smi.fasta2smi:main"
 modify-smiles = "p2smi.chemMods:main"
 smiles-props = "p2smi.chemProps:main"
+synthesis-check = "p2smi.synthRules:main"
 
 [project.optional-dependencies]
 dev = ["pytest",

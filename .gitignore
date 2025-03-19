@@ -5,6 +5,7 @@ __pycache__/
 p2smi.egg-info/
 build/
 dist/
+notebooks/
 
 # Ignore local scripts or files you don't want tracked
 aa_converter.py
