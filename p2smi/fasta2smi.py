@@ -1,21 +1,25 @@
 """
 Module to input FASTA peptide files and generate 3D structures.
-Original by Fergal; modified by Aaron Feller (2025)
+
+Original by Fergal; modified by Aaron Feller (2025).
+Reads peptide sequences from a FASTA file, resolves structural constraints,
+converts them to SMILES strings, and writes outputs.
+
+Uses p2smi.utilities.smilesgen.
 """
 
 import argparse
-
 import p2smi.utilities.smilesgen as smilesgen
 
 
 class InvalidConstraintError(Exception):
+    # Custom exception for invalid constraints
     pass
 
 
 def parse_fasta(fasta_file):
-    """
-    Generator that yields (sequence, constraint) tuples from a FASTA file.
-    """
+    # Parse a FASTA file and yield (sequence, constraint) tuples.
+    # Constraint is taken from the header line after a '|' if present.
     with open(fasta_file, "r") as fasta:
         sequence, constraint = "", ""
         for line in fasta:
@@ -32,10 +36,8 @@ def parse_fasta(fasta_file):
 
 
 def constraint_resolver(sequence, constraint):
-    """
-    Resolves constraints for a sequence using available functions
-    or generates fallback structures.
-    """
+    # Resolve constraints by checking known patterns or fallback attempts.
+    # Return (sequence, constraint) or fallback to linear if none apply.
     constraint_functions = {
         "SS": smilesgen.can_ssbond,
         "HT": smilesgen.can_htbond,
@@ -51,6 +53,7 @@ def constraint_resolver(sequence, constraint):
         result = constraint_functions[constraint.upper()](sequence)
         return result or (sequence, "")
     elif constraint.upper() == "SC":
+        # If "SC" is provided, try each SC-related constraint function
         for func in [
             constraint_functions[k] for k in constraint_functions if "SC" in k
         ]:
@@ -65,16 +68,12 @@ def constraint_resolver(sequence, constraint):
 
 
 def process_constraints(fasta_file):
-    """
-    Processes constraints for all sequences in the FASTA file.
-    """
+    # Process all sequences from the FASTA file through constraint resolution
     return (constraint_resolver(seq, constr) for seq, constr in parse_fasta(fasta_file))
 
 
 def generate_3d_structures(input_fasta, out_file):
-    """
-    Generates 3D structures from FASTA input and writes to output.
-    """
+    # Generate SMILES and write peptide structures from FASTA input to output file
     resolved_sequences = process_constraints(input_fasta)
     smilesgen.write_library(
         (
@@ -88,6 +87,7 @@ def generate_3d_structures(input_fasta, out_file):
 
 
 def main():
+    # CLI entry point: takes FASTA file input, output file path, and generates structures
     parser = argparse.ArgumentParser(description="Generate peptides from a FASTA file.")
     parser.add_argument(
         "-i", "--input_fasta", required=True, help="FASTA file of peptides."

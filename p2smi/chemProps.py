@@ -1,30 +1,42 @@
 #!/usr/bin/env python
 """
-Chemical data about a molecule.
+Chemical data extraction for a molecule.
 
 Molecules are defined by SMILES strings.
-Computes logP, Lipinski's rules, molecular formula,
-TPSA, rotatable bonds, ring count, fraction Csp3,
-heavy atom count, and formal charge.
+This script calculates:
+- logP (partition coefficient)
+- Lipinski's rule evaluations (with pass/fail reasons)
+- Molecular formula
+- Molecular weight
+- Topological Polar Surface Area (TPSA)
+- Number of H-bond donors and acceptors
+- Rotatable bonds count
+- Ring count
+- Fraction of sp3 carbons (Csp3)
+- Heavy atom count
+- Formal charge
+- Overall Lipinski rule pass/fail
 
-Uses RDKit.
+Uses RDKit for all chemical computations.
 """
 
 from rdkit import Chem
 from rdkit.Chem import (
-    Crippen,
-    Descriptors,
-    Lipinski,
-    rdMolDescriptors,
-    rdmolops,
+    Crippen,  # logP calculation
+    Descriptors,  # molecular weight, TPSA, etc.
+    Lipinski,  # H-bond donors/acceptors, rotatable bonds
+    rdMolDescriptors,  # molecular formula, fraction Csp3
+    rdmolops,  # formal charge
 )
 
 
 class SmilesError(Exception):
+    # Custom exception for invalid SMILES strings
     pass
 
 
 def log_partition_coefficient(smiles):
+    # Calculate logP for a given SMILES string
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise SmilesError(f"{smiles} is not a valid SMILES string")
@@ -32,6 +44,7 @@ def log_partition_coefficient(smiles):
 
 
 def lipinski_trial(smiles):
+    # Evaluate Lipinski's rules, returning lists of passes and failures
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise SmilesError(f"{smiles} is not a valid SMILES string")
@@ -66,11 +79,13 @@ def lipinski_trial(smiles):
 
 
 def lipinski_pass(smiles):
+    # Return True if Lipinski's rules are passed, otherwise False
     _, failed = lipinski_trial(smiles)
     return not failed
 
 
 def molecular_formula(smiles):
+    # Return molecular formula from a SMILES string
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise SmilesError(f"{smiles} is not a valid SMILES string")
@@ -78,6 +93,7 @@ def molecular_formula(smiles):
 
 
 def tpsa(smiles):
+    # Calculate topological polar surface area (TPSA)
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise SmilesError(f"{smiles} is not a valid SMILES string")
@@ -85,6 +101,7 @@ def tpsa(smiles):
 
 
 def molecule_summary(smiles):
+    # Return a dictionary with all computed molecular properties
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise SmilesError(f"{smiles} is not a valid SMILES string")
@@ -110,6 +127,7 @@ if __name__ == "__main__":
     import argparse
     import json
 
+    # Command-line interface for computing and printing molecule summary
     parser = argparse.ArgumentParser(
         description="Analyze SMILES strings for molecular properties."
     )
