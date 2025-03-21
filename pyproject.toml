@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "p2smi"
-version = "0.1.0"
+version = "1.0.0"
 description = "A package for converting peptide FASTA to SMILES strings and calculating molecular properties."
 readme = "README.md"
 license = { text = "MIT" }

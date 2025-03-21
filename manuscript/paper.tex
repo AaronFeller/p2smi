@@ -1,0 +1,81 @@
+\documentclass[10pt]{article}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{p2smi: A Python Toolkit for Peptide FASTA-to-SMILES Conversion, Modification, and Molecular Property Analysis}
+\author{
+Aaron Feller \\
+University of Texas at Austin \\
+\texttt{aaronleefeller@gmail.com}
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Summary}
+
+\textbf{p2smi} is a Python package designed to facilitate computational workflows involving peptides by enabling the conversion of peptide sequences (in FASTA format) to chemically valid SMILES representations. Additionally, the package allows for systematic modification of peptide structures (N-methylation, PEGylation) and provides tools for assessing molecular properties relevant to synthesis feasibility and drug-likeness. The tool aims to fill a critical gap between bioinformatics representations of peptide sequences and cheminformatics analysis.
+
+\section*{Statement of Need}
+
+While large libraries of peptide sequences are common in proteomics and bioinformatics, translating these into chemical structures suitable for computational chemistry or machine learning modeling remains non-trivial. \textbf{p2smi} bridges this gap by automating:  
+\begin{itemize}
+    \item FASTA-to-SMILES conversion for both canonical and constrained peptides
+    \item Sequence modification to model chemically tractable variants
+    \item Computation of key molecular properties (logP, TPSA, molecular weight, Lipinski rules)
+    \item Evaluation of synthesis constraints for cyclic and linear peptides
+\end{itemize}
+This package is already being used in the development of the PeptideCLM model and offers reproducible and extensible interfaces for peptide chemoinformatics workflows.
+
+\section*{Features}
+\begin{itemize}
+    \item Conversion of peptide FASTA sequences to SMILES
+    \item Cyclization handling (disulfide, head-to-tail, side-chain cyclizations)
+    \item Customizable peptide modifications (N-methylation and PEGylation)
+    \item Calculation of molecular properties (logP, TPSA, formula, Lipinski pass)
+    \item Command-line interface for streamlined use
+    \item Built-in synthesis rule checks for peptide feasibility
+\end{itemize}
+
+\section*{Installation}
+\begin{verbatim}
+pip install p2smi
+\end{verbatim}
+Or for development:
+\begin{verbatim}
+git clone <repository-url>
+cd p2smi
+pip install -e .[dev]
+\end{verbatim}
+
+\section*{Example Usage}
+\textbf{Convert FASTA to SMILES:}
+\begin{verbatim}
+fasta2smi -i input.fasta -o output.smi
+\end{verbatim}
+
+\textbf{Modify existing SMILES:}
+\begin{verbatim}
+modify-smiles -i input.smi -o modified.smi --peg_rate 0.2 --nmeth_rate 0.3 --nmeth_residues 0.25
+\end{verbatim}
+
+\textbf{Compute molecular properties:}
+\begin{verbatim}
+smiles-props "C1CC(NC(=O)C2CC2)C1"
+\end{verbatim}
+
+\section*{Acknowledgments}
+This work was developed as part of ongoing research on machine learning models for peptide design and representation learning, including the PeptideCLM model. Special thanks to the Wilke lab at the University of Texas at Austin for mentorship and support.
+
+\section*{References}
+\noindent
+Feller, A., et al. (2024). PeptideCLM: Contrastive Pretraining of Peptide Representations with Chemical Language Models. \textit{bioRxiv}. DOI: \href{https://www.biorxiv.org/content/10.1101/2024.08.09.607221v1}{10.1101/2024.08.09.607221v1}.
+
+\vspace{0.5cm}
+\noindent
+JOSS formatting guidelines and submission instructions: \url{https://joss.theoj.org}
+
+\end{document}
