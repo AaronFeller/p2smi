@@ -99,6 +99,14 @@ synthesis-check output.smi  # only works for natural amino acids
 - Enable batch processing/threading for high-throughput analysis
 - Incorporate predictive models for synthesis of unnatural amino acids
 
+## For Contributors
+There are several ways you can contribute to this project:
+
+- Reporting Bugs: If you encounter any issues or unexpected behavior, please let us know by opening an issue.
+- Suggesting Enhancements: Have ideas to improve the project? We’d love to hear them! Share your suggestions by opening an issue.
+- Submitting Pull Requests: If you’d like to fix a bug or implement a new feature, you can submit a pull request.
+- Improving Documentation: Clear and comprehensive documentation helps everyone.
+
 ## License
 MIT License
 
