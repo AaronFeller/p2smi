@@ -12,13 +12,14 @@ This package was released in its current form to support work on the **PeptideCL
 
 ## Directory
 
-- [Features](#features)  
-- [Installation](#installation)  
-- [Command-Line Tools](#command-line-tools)  
-- [Example Usage](#example-usage)  
-- [Future Work](#future-work)  
-- [License](#license)  
-- [Citation](#citation)  
+- [Features](#features)
+- [Installation](#installation)
+- [Command-Line Tools](#command-line-tools)
+- [Example Usage](#example-usage)
+- [Future Work](#future-work)
+- [Contributing](#for-contributors)
+- [License](#license)
+- [Citation](#citation)
 
 ## Features
 - Convert peptide FASTA files into valid SMILES strings
@@ -108,7 +109,7 @@ There are several ways you can contribute to this project:
 - Improving Documentation: Clear and comprehensive documentation helps everyone.
 
 ## License
-MIT License
+[MIT License](https://github.com/AaronFeller/p2smi/blob/master/LICENSE)
 
 ## Citation
 > If you use this tool, please cite:  
