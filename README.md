@@ -33,7 +33,7 @@ pip install p2smi
 ```
 For development:
 ```bash
-git clone &lt;your-repo-url&gt;
+git clone https://github.com/AaronFeller/p2smi.git
 cd p2smi
 pip install -e .[dev]
 ```
@@ -59,6 +59,18 @@ synthesis-check --help
 
 ## Example Usage
 
+**Generate a random peptide:**
+```bash
+generate-peptides \
+    --max_seq_len 20 \
+    --min_seq_len 10 \
+    --noncanonical_percent 0.1 \
+    --lowercase_percent 0.1 \
+    --num_sequences 10 \
+    --constraints all \
+    --outfile outputfile.smi
+```
+
 **Convert a FASTA file to SMILES:**
 ```bash
 fasta2smi -i peptides.fasta -o output.smi
@@ -74,10 +86,18 @@ modify-smiles -i input.smi -o modified.smi --peg_rate 0.3 --nmeth_rate 0.2 --nme
 smiles-props "C1CC(NC(=O)C2CC2)C1"
 ```
 
+**Check synthetic feasability**
+```bash
+synthesis-check output.smi  # only works for natural amino acids
+```
+
 ## Future Work
-- Expand support for additional post-translational modifications
+- Expand support for additional post-translational modifications (build importer)
 - Enhance synthesis-check with rules for noncanonical amino acid and modified peptides
-- 
+- Expand usage of mol files (applying RDKit's Chem.MolFromSmiles() function)
+- Include alternative encodings (HELM, SELFIES, etc.)
+- Enable batch processing/threading for high-throughput analysis
+- Incorporate predictive models for synthesis of unnatural amino acids
 
 ## License
 MIT License
