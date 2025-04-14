@@ -4,7 +4,7 @@
 
 This package was released in its current form to support work on the **PeptideCLM** model, described in our [Publication](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441).
 
-> **If you use this tool, please cite the PeptideCLM paper.** A JOSS publication is forthcoming.
+> **If you use this tool, please cite the PeptideCLM paper.** A publication for this specific toolkit is forthcoming.
 
 ## Manuscript
 - [View PDF](manuscript/paper.pdf)
