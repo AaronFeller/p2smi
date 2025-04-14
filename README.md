@@ -6,10 +6,6 @@ This package was released in its current form to support work on the **PeptideCL
 
 > **If you use this tool, please cite the PeptideCLM paper.** A JOSS publication is forthcoming.
 
-## Manuscript
-- [View PDF](manuscript/paper.pdf)
-- [View markdown source](manuscript/paper.md)
-
 ## Directory
 
 - [Features](#features)
