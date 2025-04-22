@@ -2,7 +2,7 @@
 
 **p2smi** is a Python package for generating and modifying peptide SMILES strings from FASTA input and computing molecular properties. It supports cyclic and linear peptides, noncanonical amino acids, and common chemical modifications (e.g., N-methylation, PEGylation).
 
-This package was released in its current form to support work on the **PeptideCLM** model, described in our [Publication](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441).
+This package was built to support work on the **PeptideCLM** model, described in our [Publication](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441).
 
 > **If you use this tool, please cite the PeptideCLM paper.** A publication for this specific toolkit is forthcoming.
 
@@ -56,7 +56,7 @@ synthesis-check --help
 
 ## Example Usage
 
-**Generate a random peptide:**
+**Generate 10 random peptides:**
 ```bash
 generate-peptides \
     --max_seq_len 20 \
@@ -65,12 +65,12 @@ generate-peptides \
     --lowercase_percent 0.1 \
     --num_sequences 10 \
     --constraints all \
-    --outfile outputfile.smi
+    --outfile peptides.fasta
 ```
 
 **Convert a FASTA file to SMILES:**
 ```bash
-fasta2smi -i peptides.fasta -o output.smi
+fasta2smi -i peptides.fasta -o output.p2smi
 ```
 
 **Modify existing SMILES strings (N-methylation/PEGylation):**
@@ -85,7 +85,7 @@ smiles-props "C1CC(NC(=O)C2CC2)C1"
 
 **Check synthetic feasability**
 ```bash
-synthesis-check output.smi  # only works for natural amino acids
+synthesis-check natural_peptides.fasta # only works for natural amino acids
 ```
 
 ## Future Work
