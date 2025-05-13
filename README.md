@@ -2,9 +2,9 @@
 
 **p2smi** is a Python package for generating and modifying peptide SMILES strings from FASTA input and computing molecular properties. It supports cyclic and linear peptides, noncanonical amino acids, and common chemical modifications (e.g., N-methylation, PEGylation).
 
-This package was built to support work on the **PeptideCLM** model, described in our [Publication](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441).
+If you use this tool, please cite our [preprint](https://doi.org/10.48550/arXiv.2505.00719) on arXiv titled **p2smi: A Python Toolkit for Peptide FASTA-to-SMILES Conversion and Molecular Property Analysis**.
 
-> **If you use this tool, please cite the PeptideCLM paper.** A publication for this specific toolkit is forthcoming.
+> This package was built to support work on the **PeptideCLM** model, described [here](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441).
 
 ## Directory
 
