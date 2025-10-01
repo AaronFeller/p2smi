@@ -31,38 +31,49 @@ def test_test_charge_behavior():
 
 def test_collect_synthesis_issues_catches_hydrophobicity():
     # Very hydrophobic simple molecule
-    smiles = "CCCCCCCCCCCC"
-    issues = collect_synthesis_issues(smiles, "ACDEFG")
+    issues = collect_synthesis_issues("FWYLIV")
     assert any("logP" in issue for issue in issues)
 
 
-def test_evaluate_line_pass_case():
-    line = "A,S,K-LINEAR: N[C@@H](C)C(=O)N[C@@H]" "(CCCCN)C(=O)N[C@@H](C(C)C)C(=O)O"
+def test_failure_to_generate_smiles():
+    issues = collect_synthesis_issues("XXXX")
+    assert any(
+        "Failed to generate SMILES, logP not checked." in issue for issue in issues
+    )
+
+
+def test_evaluate_header_pass_case():
+    line = ">seq1"
     result = evaluate_line(line)
+    assert result[0] == ">seq1"
+    assert result[1] is None
+
+
+def test_evaluate_line_pass_case():
+    line = "AARIN"
+    result = evaluate_line(line)
+    assert result[0] == "AARIN"
     assert result[1] is True
 
 
 def test_evaluate_line_fail_case_forbidden_motif():
-    line = "P,P,P-LINEAR: N[C@@H](C)C(=O)N[C@@H]" "(C(C)C)C(=O)N[C@@H](C(C)C)C(=O)O"
+    line = "PPP"
     result = evaluate_line(line)
     assert any("prolines" in issue.lower() for issue in result[1])
 
 
 def test_evaluate_file(tmp_path):
-    test_content = (
-        "A,S,K-LINEAR: N[C@@H](C)C(=O)N[C@@H]"
-        "(CCCCN)C(=O)N[C@@H](C(C)C)C(=O)O\n"
-        "P,P,P-LINEAR: N[C@@H](C)C(=O)N[C@@H]"
-        "(C(C)C)C(=O)N[C@@H](C(C)C)C(=O)O"
-    )
+    test_content = ">Test1\n" "ASK\n" ">Test2\n" "PPP\n"
     test_file = tmp_path / "test_input.txt"
     output_file = tmp_path / "test_output.txt"
     test_file.write_text(test_content)
 
     results = evaluate_file(test_file, output_file)
-    assert len(results) == 2
-    assert results[0][1] is True
-    assert any("prolines" in issue.lower() for issue in results[1][1])
+    assert len(results) == 4
+    assert results[0][1] is None
+    assert results[1][1] is True
+    assert results[2][1] is None
+    assert type(results[3][1]) is list
 
     written_content = output_file.read_text()
     assert "PASS" in written_content

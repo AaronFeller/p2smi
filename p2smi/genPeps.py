@@ -14,11 +14,11 @@ Key features:
 
 Example usage:
 python generate_random_peptides.py \
-    --num_sequences 10 \
-    --min_seq_len 8 \
-    --max_seq_len 20 \
-    --noncanonical_percent 0.3 \
-    --lowercase_percent 0.25 \
+    --num 10 \
+    --min 8 \
+    --max 20 \
+    --ncaa 0.3 \
+    -d 0.25 \
     --constraints all \
     --outfile random_peptides.fasta
 """
@@ -140,27 +140,35 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate random amino acid sequences."
     )
-    parser.add_argument("--min_seq_len", type=int, default=5)
-    parser.add_argument("--max_seq_len", type=int, default=100)
-    parser.add_argument("--noncanonical_percent", type=float, default=0.2)
-    parser.add_argument("--lowercase_percent", type=float, default=0.2)  # D-amino acids
-    parser.add_argument("--num_sequences", type=int, default=1)
-    parser.add_argument("--constraints", type=str, nargs="*", default=[])
-    parser.add_argument("--outfile", type=str, default=None)
+    parser.add_argument("-n", "--num", type=int, default=10)
+    parser.add_argument("-min", "--min_length", type=int, default=10)
+    parser.add_argument("-max", "--max_length", type=int, default=10)
+    parser.add_argument("-ncaa", "--noncanonical", type=float, default=0)
+    parser.add_argument("-d", "--dextro", type=float, default=0)
+    parser.add_argument(
+        "-c",
+        "--cyclization_constraints",
+        type=str,
+        default=None,
+        help="Cyclization types: 'all', 'none', or comma-separated list like 'HT,SCSC'",
+    )
+    parser.add_argument("-o", "--outfile", type=str, default=None)
     args = parser.parse_args()
 
-    constraints = (
-        CONSTRAINTS
-        if args.constraints == ["all"] or not args.constraints
-        else args.constraints
-    )
+    # if constraints is "all", use all supported constraints
+    if args.cyclization_constraints == "all":
+        constraints = ["SS", "HT", "SCNT", "SCCT", "SCSC"]
+    elif args.cyclization_constraints is None:
+        constraints = []
+    else:
+        constraints = [args.cyclization_constraints]
 
     sequences = generate_sequences(
-        args.num_sequences,
-        args.min_seq_len,
-        args.max_seq_len,
-        args.noncanonical_percent,
-        args.lowercase_percent,
+        args.num,
+        args.min_length,
+        args.max_length,
+        args.noncanonical,
+        args.dextro,
         constraints,
     )
 

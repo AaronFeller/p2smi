@@ -6,10 +6,13 @@ p2smi.egg-info/
 build/
 dist/
 notebooks/
-manuscript/
+# manuscript/
 data/
 .ruff_cache/
-draft-pdf.yml
+# draft-pdf.yml
+paper.preprint.tex
+script_for_*
 
 # Ignore local scripts or files you don't want tracked
 aa_converter.py
+testing/

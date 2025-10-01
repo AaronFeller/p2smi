@@ -12,6 +12,14 @@ from rdkit.Chem import AllChem, Draw
 # Import amino acid definitions
 from p2smi.utilities.aminoacids import all_aminos
 
+from functools import lru_cache
+
+# build direct reverse maps once
+LETTER2NAME = {props["Letter"]: name for name, props in all_aminos.items()}
+CODE2NAME = {
+    props.get("Code"): name for name, props in all_aminos.items() if "Code" in props
+}
+
 aminodata = all_aminos  # Current dictionary of amino acids
 
 # Custom exceptions for specific error conditions
@@ -77,21 +85,35 @@ def return_available_residues(out="Letter"):
     return [properties[out] for properties in aminodata.values()]
 
 
+# precompute sets of residue *names* that satisfy each constraint
+CONSTRAINT_RES_NAME_SETS = {
+    key: frozenset([name for name, props in aminodata.items() if props.get(key)])
+    for key in {"disulphide", "cterm", "nterm", "ester"}
+}
+
+
 def return_constraint_resis(constraint_type):
-    # Return amino acid names that satisfy a given constraint type
-    return [
-        name
-        for name, properties in aminodata.items()
-        if properties.get(constraint_type)
-    ]
+    # fast, no rebuild on each call
+    return list(CONSTRAINT_RES_NAME_SETS[constraint_type])
 
 
-def property_to_name(property, value):
-    # Find and return the aa name where the given property matches the specified value
+@lru_cache(maxsize=None)
+def property_to_name(prop, value):
+    if prop == "Letter":
+        try:
+            return LETTER2NAME[value]
+        except KeyError:
+            raise UndefinedAminoError(f"{value} not found")
+    if prop == "Code":
+        try:
+            return CODE2NAME[value]
+        except KeyError:
+            raise UndefinedAminoError(f"{value} not found")
+    # fallback to old path for rare props
     for name, properties in aminodata.items():
-        if properties.get(property) == value:
+        if properties.get(prop) == value:
             return name
-    raise UndefinedAminoError(f"Amino-acid {value} for {property} not found")
+    raise UndefinedAminoError(f"Amino-acid {value} for {prop} not found")
 
 
 def gen_all_pos_peptides(pepliblen):
@@ -125,136 +147,146 @@ def gen_all_matching_peptides(pattern):
         yield outpep
 
 
+_CONSTRAINT_LETTER_SETS = {
+    "disulphide": frozenset(
+        props["Letter"] for _, props in aminodata.items() if props.get("disulphide")
+    ),
+    "cterm": frozenset(
+        props["Letter"] for _, props in aminodata.items() if props.get("cterm")
+    ),
+    "nterm": frozenset(
+        props["Letter"] for _, props in aminodata.items() if props.get("nterm")
+    ),
+    "ester": frozenset(
+        props["Letter"] for _, props in aminodata.items() if props.get("ester")
+    ),
+}
+
+
+@lru_cache(maxsize=None)
+def _is_valid_letter(letter: str) -> bool:
+    # uses LETTER2NAME you already define elsewhere
+    return letter in LETTER2NAME
+
+
+def _normalize_seq_letters(seq):
+    """Return the sequence as a list of one-letter codes; validate quickly."""
+    letters = list(seq) if isinstance(seq, str) else list(seq)
+    for r in letters:
+        if not _is_valid_letter(r):
+            raise UndefinedAminoError(f"{r} not recognised as amino acid letter")
+    return letters
+
+
+def _preserve_seq_type(orig, letters_list):
+    """Return letters with the same container type convention your code expects."""
+    if isinstance(orig, tuple):
+        return tuple(letters_list)
+    # For strings, downstream code often uses ','.join(seq), so keep as list
+    return list(letters_list)
+
+
+# -------------------------------------------------------------------
+
+
 def can_ssbond(peptideseq):
-    # Check if the peptide can form a disulphide bond.
-    # Must have at least two residues with a "disulphide" constraint.
-    disulphides = return_constraint_resis("disulphide")
-    locs = [
-        loc
-        for loc, resi in enumerate(peptideseq)
-        if resi in disulphides or property_to_name("Letter", resi) in disulphides
-    ]
+    """Disulphide: need at least two Cys-like residues;
+    pick the pair with max separation (>=3 apart)."""
+    letters = _normalize_seq_letters(peptideseq)
+    dis = _CONSTRAINT_LETTER_SETS["disulphide"]
+    locs = [i for i, r in enumerate(letters) if r in dis]
     if len(locs) < 2:
         return False
-    # Find the pair with the greatest separation
-    pos_pairs = sorted(
-        [(pair, abs(pair[0] - pair[1])) for pair in itertools.combinations(locs, 2)],
+    (a, b), sep = max(
+        ((p, abs(p[0] - p[1])) for p in itertools.combinations(locs, 2)),
         key=operator.itemgetter(1),
-        reverse=True,
     )
-    best_pair = pos_pairs[0]
-    if best_pair[1] <= 2:
+    if sep <= 2:
         return False
-    # Build the pattern: "SS" prefix followed by "C" at the bond positions, "X" otherwise
-    pattern = "SS" + "".join(
-        ["C" if i in best_pair[0] else "X" for i in range(len(peptideseq))]
-    )
-    return peptideseq, pattern
+    pattern = "SS" + "".join("C" if i in (a, b) else "X" for i in range(len(letters)))
+    return _preserve_seq_type(peptideseq, letters), pattern
 
 
 def can_htbond(peptideseq):
-    # Check if peptide qualifies for hydrogen bonding (length >= 5 or exactly 2)
-    if len(peptideseq) >= 5 or len(peptideseq) == 2:
-        return peptideseq, "HT"
+    """Your original heuristic: qualifies if len >= 5 or exactly 2."""
+    letters = _normalize_seq_letters(peptideseq)
+    if len(letters) >= 5 or len(letters) == 2:
+        return _preserve_seq_type(peptideseq, letters), "HT"
     return False
 
 
 def can_scntbond(peptideseq, strict=False):
-    # Check for sidechain to C-terminal bond via n-terminal constraint.
-    locs = [
-        num + 3
-        for num, resi in enumerate(peptideseq[3:])
-        if resi in return_constraint_resis("cterm")
-        or property_to_name("Letter", resi) in return_constraint_resis("cterm")
-    ]
-    if len(locs) == 0 or (len(locs) > 1 and strict):
+    """Sidechain → C-terminal (via N-term constraint code 'Z' position)."""
+    letters = _normalize_seq_letters(peptideseq)
+    cterm = _CONSTRAINT_LETTER_SETS["cterm"]
+    locs = [i for i, r in enumerate(letters[3:], start=3) if r in cterm]
+    if not locs or (len(locs) > 1 and strict):
         return False
-    if not strict:
-        # "SC" prefix with "Z" at the constrained position, "X" elsewhere
-        pattern = ["SC"] + [
-            "Z" if num == locs[-1] else "X" for num, _ in enumerate(peptideseq)
-        ]
-        return peptideseq, "".join(pattern)
-    return False
+    idx = locs[-1]  # keep your previous "last occurrence" behavior
+    pattern = ["SC"] + ["Z" if i == idx else "X" for i in range(len(letters))]
+    return _preserve_seq_type(peptideseq, letters), "".join(pattern)
 
 
 def can_scctbond(peptideseq, strict=False):
-    # Check for sidechain to C-terminal bond using n-term and ester constraints.
-    esters = return_constraint_resis("ester")
-    nterms = return_constraint_resis("nterm")
-    locs = [
-        (num, "N")
-        for num, resi in enumerate(peptideseq[:-3])
-        if resi in nterms or property_to_name("Letter", resi) in nterms
-    ]
-    locs += [
-        (num, "E")
-        for num, resi in enumerate(peptideseq[:-3])
-        if resi in esters or property_to_name("Letter", resi) in esters
-    ]
-    if len(locs) == 0 or (len(locs) > 1 and strict):
+    """Sidechain ↔ C-term using N-term/ester site: encode 'N' or 'E' at the site."""
+    letters = _normalize_seq_letters(peptideseq)
+    esters = _CONSTRAINT_LETTER_SETS["ester"]
+    nterms = _CONSTRAINT_LETTER_SETS["nterm"]
+
+    locs = [(i, "N") for i, r in enumerate(letters[:-3]) if r in nterms]
+    locs += [(i, "E") for i, r in enumerate(letters[:-3]) if r in esters]
+    if not locs or (len(locs) > 1 and strict):
         return False
-    if not strict:
-        pattern = ["SC"] + [
-            locs[0][1] if num == locs[0][0] else "X" for num, _ in enumerate(peptideseq)
-        ]
-        return peptideseq, "".join(pattern)
-    return False
+
+    i0, code = locs[0]  # match previous behavior (first eligible)
+    pattern = ["SC"] + [code if i == i0 else "X" for i in range(len(letters))]
+    return _preserve_seq_type(peptideseq, letters), "".join(pattern)
 
 
 def can_scscbond(peptideseq, strict=False):
-    # Check for sidechain-to-sidechain bond formation.
-    nterms = return_constraint_resis("nterm")
-    cterms = return_constraint_resis("cterm")
-    esters = return_constraint_resis("ester")
-    locs = {"nterms": [], "cterms": [], "esters": []}
-    for loc, resi in enumerate(peptideseq):
-        for bondtype, bondname in [
-            (nterms, "nterms"),
-            (cterms, "cterms"),
-            (esters, "esters"),
-        ]:
-            if resi in bondtype or property_to_name("Letter", resi) in bondtype:
-                locs[bondname].append(loc)
-    if not locs["cterms"] or not (locs["nterms"] or locs["esters"]):
+    """Sidechain-to-sidechain: choose (cterm_pos, partner_pos) with max separation >= 2.
+    Encode 'Z' at cterm_pos and 'N'/'E' at partner_pos depending on site set.
+    """
+    letters = _normalize_seq_letters(peptideseq)
+    nterms = _CONSTRAINT_LETTER_SETS["nterm"]
+    cterms = _CONSTRAINT_LETTER_SETS["cterm"]
+    esters = _CONSTRAINT_LETTER_SETS["ester"]
+
+    locs_n = [i for i, r in enumerate(letters) if r in nterms]
+    locs_c = [i for i, r in enumerate(letters) if r in cterms]
+    locs_e = [i for i, r in enumerate(letters) if r in esters]
+
+    if not locs_c or not (locs_n or locs_e):
         return False
-    # Generate all possible pairs with separation of at least 2
-    possible_pairs = [
-        (pair, abs(pair[0] - pair[1]))
-        for pair in itertools.product(locs["cterms"], locs["nterms"] + locs["esters"])
-        if abs(pair[0] - pair[1]) >= 2
+
+    partners = [(j, "N") for j in locs_n] + [(j, "E") for j in locs_e]
+    pairs = [
+        ((i, j, code), abs(i - j))
+        for i in locs_c
+        for (j, code) in partners
+        if abs(i - j) >= 2
     ]
-    if not possible_pairs:
+    if not pairs:
         return False
-    best_pair = max(possible_pairs, key=operator.itemgetter(1))[0]
-    # Build pattern with "SC" prefix and appropriate bond code at the best pair positions
+
+    (ci, pj, code), _ = max(pairs, key=operator.itemgetter(1))
     pattern = "SC" + "".join(
-        [
-            (
-                "Z"
-                if num == best_pair[0]
-                else (
-                    "N"
-                    if num == best_pair[1] and best_pair[1] in locs["nterms"]
-                    else (
-                        "E"
-                        if num == best_pair[1] and best_pair[1] in locs["esters"]
-                        else "X"
-                    )
-                )
-            )
-            for num, _ in enumerate(peptideseq)
-        ]
+        "Z" if k == ci else (code if k == pj else "X") for k in range(len(letters))
     )
-    return peptideseq, pattern
+    return _preserve_seq_type(peptideseq, letters), pattern
 
 
 def what_constraints(peptideseq):
-    # Return a list of all applicable constraint results for a peptide sequence
     return [
-        result
-        for func in [can_ssbond, can_htbond, can_scctbond, can_scntbond, can_scscbond]
-        if (result := func(peptideseq))
+        res
+        for res in (
+            can_ssbond(peptideseq),
+            can_htbond(peptideseq),
+            can_scctbond(peptideseq),
+            can_scntbond(peptideseq),
+            can_scscbond(peptideseq),
+        )
+        if res
     ]
 
 
@@ -335,33 +367,43 @@ def nmethylate_peptides(structs):
             yield seq, bond_def, nmethylate_peptide_smiles(smiles)
 
 
+@lru_cache(maxsize=None)
 def return_smiles(resi):
-    # Get the standard SMILES for a residue
     return return_constrained_smiles(resi, "SMILES")
 
 
+@lru_cache(maxsize=None)
 def return_constrained_smiles(resi, constraint):
-    # Return the SMILES string for a residue based on a specific constraint type
     try:
         return aminodata[resi][constraint]
     except KeyError:
         try:
             return aminodata[property_to_name("Letter", resi)][constraint]
         except UndefinedAminoError:
-            try:
-                return aminodata[property_to_name("Code", resi)][constraint]
-            except UndefinedAminoError:
-                raise UndefinedAminoError(f"{resi} not recognised as amino acid")
+            return aminodata[property_to_name("Code", resi)][constraint]
 
 
 def linear_peptide_smiles(peptideseq):
-    # Generate a linear peptide SMILES string by sequentially connecting residues
+    """
+    Build linear peptide SMILES by concatenating residue fragments.
+    Start with 'O', then for each residue:
+      (1) trim the last character of the current chain
+      (2) append the full residue SMILES fragment
+    Assumes each residue fragment in aminodata['SMILES'] ends with a connector
+    atom that replaces the trimmed char from the chain (e.g., ...O).
+    """
     if not peptideseq:
         return None
-    combsmiles = "O"  # Starting oxygen atom
+
+    parts = ["O"]  # starting oxygen atom (matches your existing convention)
+
     for resi in peptideseq:
-        combsmiles = combsmiles[:-1] + return_smiles(resi)
-    return combsmiles
+        frag = return_smiles(resi)  # full fragment, unmodified
+        # trim the LAST CHAR of the CURRENT chain, not the fragment
+        parts[-1] = parts[-1][:-1]
+        parts.append(frag)
+
+    return "".join(parts)
 
 
 def bond_counter(peptidesmiles):
@@ -379,26 +421,25 @@ def pep_positions(linpepseq):
     return positions
 
 
-def constrained_peptide_smiles(peptideseq, pattern):
-    # Generate a constrained peptide SMILES string based on a bonding pattern
-    valid_codes = {
-        "C": "disulphide",
-        "Z": "cterm",
-        "N": "nterm",
-        "E": "ester",
-        "X": "",  # 'X' indicates no constraint
-    }
-    smiles = "O"  # Start with oxygen atom
+# Constrained peptide SMILES generator
+def constrained_peptide_smiles(peptideseq, pattern, next_bond_id=None):
+    """
+    Build constrained peptide SMILES.
+    Uses next_bond_id (int) for '*' placeholders when needed;
+    returns (seq, pattern, smiles).
+    """
+    valid_codes = {"C": "disulphide", "Z": "cterm", "N": "nterm", "E": "ester", "X": ""}
+    smiles = "O"
 
     if not pattern:
         return peptideseq, "", linear_peptide_smiles(peptideseq)
 
     if pattern[:2] == "HT":
-        # Handle hydrogen bond patterns
-        smiles = linear_peptide_smiles(peptideseq)
-        bond_num = str(bond_counter(smiles) + 1)
-        smiles = smiles[0] + bond_num + smiles[1:-5] + bond_num + smiles[-5:-1]
-        return peptideseq, pattern, smiles
+        smi = linear_peptide_smiles(peptideseq)
+        bid = (bond_counter(smi) + 1) if next_bond_id is None else next_bond_id
+        sbid = str(bid)
+        smi = smi[0] + sbid + smi[1:-5] + sbid + smi[-5:-1]
+        return peptideseq, pattern, smi
 
     for resi, code in zip(peptideseq, pattern[2:]):
         smiles = smiles[:-1]
@@ -413,22 +454,18 @@ def constrained_peptide_smiles(peptideseq, pattern):
         else:
             raise BondSpecError(f"{code} in pattern {pattern} not recognised")
 
-    # Edit N- or C-terminus based on non-wildcard parts of the pattern
-    pattern_for_fixing = pattern.replace("X", "")
-    if pattern_for_fixing == "SCN":  # N acts as N-term binding to C-term
+    pf = pattern.replace("X", "")
+    if pf in {"SCN", "SCE"}:
         smiles = smiles[:-5] + "*(=O)"
-    elif pattern_for_fixing == "SCE":  # E (ester) binds the C-term
-        smiles = smiles[:-5] + "*(=O)"
-    elif pattern_for_fixing == "SCZ":  # Z indicates C-term on a sidechain bond
+    elif pf == "SCZ":
         smiles = "N*" + smiles[1:]
 
-    # Replace placeholder '*' with an incremented bond number
-    bond_number = str(bond_counter(smiles) + 1)
-    smiles = smiles.replace("*", bond_number)
-
+    bid = (bond_counter(smiles) + 1) if next_bond_id is None else next_bond_id
+    smiles = smiles.replace("*", str(bid))
     return peptideseq, pattern, smiles
 
 
+# generate structures from sequences with specified constraints
 def gen_structs_from_seqs(
     sequences,
     ssbond=False,
@@ -438,7 +475,6 @@ def gen_structs_from_seqs(
     scscbond=False,
     linear=False,
 ):
-    # Generate peptide structures from sequences applying specified bonding constraints
     funcs = [
         (ssbond, can_ssbond),
         (htbond, can_htbond),
@@ -446,12 +482,28 @@ def gen_structs_from_seqs(
         (scntbond, can_scntbond),
         (scscbond, can_scscbond),
     ]
+    next_bond_id = 1
+
     for seq in sequences:
+        emitted = False
         for check, func in funcs:
-            if check and (result := func(seq)):
-                seq, bonddef = result
-                yield constrained_peptide_smiles(seq, bonddef)
-        if linear:
+            if not check:
+                continue
+            result = func(seq)
+            if not result:
+                continue
+            seq2, bonddef = result
+            # patterns that consume a bond id
+            needs_ring_id = bonddef.startswith("HT") or bonddef.startswith("SC")
+            if needs_ring_id:
+                out = constrained_peptide_smiles(seq2, bonddef, next_bond_id)
+                next_bond_id += 1
+            else:
+                out = constrained_peptide_smiles(seq2, bonddef)
+            yield out
+            emitted = True
+
+        if linear or not emitted:
             yield (seq, "", linear_peptide_smiles(seq))
 
 
@@ -537,6 +589,7 @@ def save_3Dmolecule(sequence, bond_def):
     return fname
 
 
+# --- update write_molecule to avoid 3D unless write=="structure" and minimise=True ---
 def write_molecule(
     smiles,
     peptideseq,
@@ -546,8 +599,8 @@ def write_molecule(
     write="structure",
     return_struct=False,
     new_folder=True,
+    minimise=False,
 ):
-    # Write the molecule either as a drawn image or as a 3D structure file.
     twodfolder = threedfolder = outfldr
     if not return_struct and new_folder:
         twodfolder = path.join(outfldr, "2D-Files")
@@ -564,27 +617,33 @@ def write_molecule(
         except KeyError:
             name = ",".join(peptideseq) + bond_def
 
-    mymol = Chem.MolFromSmiles(smiles)
-    if not mymol:
+    mol = Chem.MolFromSmiles(smiles)
+    if not mol:
         raise SmilesError(f"{smiles} returns None molecule")
-    mymol.SetProp("_Name", name)
+    mol.SetProp("_Name", name)
 
     if write == "draw":
         if not path.exists(twodfolder):
             os.makedirs(twodfolder)
-        Draw.MolToFile(mymol, path.join(twodfolder, name + ".png"), size=(1000, 1000))
+        AllChem.Compute2DCoords(mol)  # fast 2D
+        Draw.MolToFile(mol, path.join(twodfolder, name + ".png"), size=(1000, 1000))
     elif write == "structure":
         if not path.exists(threedfolder):
             os.makedirs(threedfolder)
-        AllChem.EmbedMolecule(mymol)
-        AllChem.UFFOptimizeMolecule(mymol)
+        if minimise:
+            AllChem.EmbedMolecule(mol)
+            AllChem.UFFOptimizeMolecule(mol)
+        else:
+            # keep it 2D; most tools accept 2D SDF; much faster
+            AllChem.Compute2DCoords(mol)
+        block = Chem.MolToMolBlock(mol)
         if return_struct:
-            return Chem.MolToMolBlock(mymol)
+            return block
         else:
             with open(path.join(threedfolder, name + "." + type), "wb") as handle:
-                handle.write(Chem.MolToMolBlock(mymol))
+                handle.write(block)
     else:
-        raise TypeError(f'"write" must be set to "draw" or "structure", got {write}')
+        raise TypeError(f'"write" must be "draw" or "structure", got {write}')
     return True
 
 
@@ -597,36 +656,38 @@ def write_library(inputlist, outloc, write="text", minimise=False, write_to_file
                 try:
                     seq, bond_def, smiles = peptide
                     bond_def = bond_def if bond_def else "linear"
-                    f.write(f"{','.join(seq)}-{bond_def}: {smiles}\n")
+                    f.write(f"{''.join(seq)}-{bond_def}: {smiles}\n")
                     count += 1
                 except Exception as e:
                     print(e)
+    # Handle drawing or structure writing
     elif write in {"draw", "structure"}:
         if write_to_file:
             with open(outloc, "w") as out:
                 for peptide in inputlist:
                     peptideseq, bond_def, smiles = peptide
-                    if not peptideseq and not bond_def and not smiles:
+                    if not (peptideseq or bond_def or smiles):
                         continue
                     mol = Chem.MolFromSmiles(smiles)
-                    AllChem.EmbedMolecule(mol)
-                    AllChem.UFFOptimizeMolecule(mol)
-                    try:
-                        name = peptideseq + bond_def
-                    except TypeError:
-                        try:
-                            name = (
-                                "".join(
-                                    [aminodata[resi]["Letter"] for resi in peptideseq]
-                                )
-                                + bond_def
-                            )
-                        except KeyError:
-                            name = ",".join(map(str, peptideseq)) + bond_def
-                    mol.SetProp("_Name", name)
-                    molstr = Chem.MolToMolBlock(mol)
-                    out.write(molstr + "\n$$$$\n")
-                    count += 1
+                    if write == "structure":
+                        # default to 2D unless minimise=True (caller controls)
+                        AllChem.Compute2DCoords(mol)
+                        name = ",".join(map(str, peptideseq)) + (
+                            f"_{bond_def}" if bond_def else "_linear"
+                        )
+                        mol.SetProp("_Name", name)
+                        out.write(Chem.MolToMolBlock(mol) + "\n$$$$\n")
+                        count += 1
+                    else:
+                        # defer to write_molecule for PNGs
+                        write_molecule(
+                            smiles,
+                            peptideseq,
+                            bond_def,
+                            path.dirname(outloc),
+                            write="draw",
+                        )
+                        count += 1
         else:
             for peptide in inputlist:
                 seq, bond_def, smiles = peptide

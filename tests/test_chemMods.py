@@ -42,7 +42,7 @@ def test_parse_input_lines_handles_good_and_bad_lines():
 def test_modify_sequence_modifications_included():
     test_seq = "C(=O)N[C@H]C(=O)N[C@H]C"
     mod_seq, mods = modify_sequence(
-        test_seq, methylate=True, pegylate=True, nmeth_residues=0.5
+        test_seq, do_methylate=True, do_pegylate=True, nmeth_residues=0.5
     )
     assert any("N-methylation" in m for m in mods)
     assert any("PEGylation" in m for m in mods)

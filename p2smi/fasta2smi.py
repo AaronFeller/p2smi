@@ -72,7 +72,7 @@ def process_constraints(fasta_file):
     return (constraint_resolver(seq, constr) for seq, constr in parse_fasta(fasta_file))
 
 
-def generate_3d_structures(input_fasta, out_file):
+def generate_smiles_strings(input_fasta, out_file):
     # Generate SMILES and write peptide structures from FASTA input to output file
     resolved_sequences = process_constraints(input_fasta)
     smilesgen.write_library(
@@ -88,13 +88,16 @@ def generate_3d_structures(input_fasta, out_file):
 
 def main():
     # CLI entry point: takes FASTA file input, output file path, and generates structures
-    parser = argparse.ArgumentParser(description="Generate peptides from a FASTA file.")
+    parser = argparse.ArgumentParser(
+        description="Generate peptides from a standard FASTA file."
+    )
     parser.add_argument(
         "-i", "--input_fasta", required=True, help="FASTA file of peptides."
     )
     parser.add_argument("-o", "--out_file", required=True, help="Output file.")
     args = parser.parse_args()
-    generate_3d_structures(args.input_fasta, args.out_file)
+
+    generate_smiles_strings(args.input_fasta, args.out_file)
 
 
 if __name__ == "__main__":

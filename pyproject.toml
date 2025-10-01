@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "p2smi"
-version = "0.1.0"
-description = "A package for converting peptide FASTA to SMILES strings and calculating molecular properties."
+version = "1.1.0"
+description = "A toolkit enabling SMILES generation and property analysis for noncanonical and cyclized peptides."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name="Aaron Feller", email="aaronleefeller@gmail.com" }]

@@ -1,14 +1,20 @@
-# p2smi: Peptide FASTA-to-SMILES Conversion and Molecular Property Tools
+# p2smi: Generation and Analysis of Drug-like Peptide SMILES Strings
 
-**p2smi** is a Python package for generating and modifying peptide SMILES strings from FASTA input and computing molecular properties. It supports cyclic and linear peptides, noncanonical amino acids, and common chemical modifications (e.g., N-methylation, PEGylation).
+**p2smi** is a Python package for generating peptide sequences, converting them to SMILES (including cyclizations and noncanonical amino acids), and evaluating their molecular properties. It supports modification (N-methylation, PEGylation), synthesis feasibility checks, and output in a new peptide/SMILES `.p2smi` format.
 
-If you use this tool, please cite our [preprint](https://doi.org/10.48550/arXiv.2505.00719) on arXiv titled **p2smi: A Python Toolkit for Peptide FASTA-to-SMILES Conversion and Molecular Property Analysis**.
+This toolkit was developed in support of [PeptideCLM](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441), a smiles-based language model for modified peptides.
 
-> This package was built to support work on the **PeptideCLM** model, described [here](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441).
+**Please cite our manuscript if you use this tool.**  
+[arXiv preprint](https://arxiv.org/abs/2505.00719)
 
-## Directory
 
-- [Features](#features)
+## 📄 Manuscript
+- [PDF](manuscript/paper.pdf) | [Markdown](manuscript/paper.md)
+
+
+## 📁 Directory
+
+- [Features](#Features)
 - [Installation](#installation)
 - [Command-Line Tools](#command-line-tools)
 - [Example Usage](#example-usage)
@@ -17,97 +23,119 @@ If you use this tool, please cite our [preprint](https://doi.org/10.48550/arXiv.
 - [License](#license)
 - [Citation](#citation)
 
+
 ## Features
+
+- Generate random peptide sequences (with NCAAs, D-stereochemistry, and cyclization)
 - Convert peptide FASTA files into valid SMILES strings
-- Automatically handle peptide cyclizations (disulfide, head-to-tail, side-chain to N-term, side-chain to C-term, side-chain to side-chain)
-- Modify peptide SMILES with customizable N-methylation and PEGylation
-- Evaluate synthesis feasibility with defined synthesis rules
-- Compute molecular properties: logP, TPSA, molecular formula, and Lipinski rule evaluation
+- Support five cyclization types: disulfide, head-to-tail, sidechain-to-sidechain, sidechain-to-N-term, sidechain-to-C-term
+- Modify SMILES with user-defined N-methylation and PEGylation rates
+- Evaluate synthetic feasibility based on common failure motifs
+- Compute molecular properties (MW, logP, TPSA, Lipinski, etc.)
+
 
 ## Installation
+
+Install from PyPI:
+
 ```bash
 pip install p2smi
 ```
-For development:
+
+For local development:
+
 ```bash
 git clone https://github.com/AaronFeller/p2smi.git
 cd p2smi
 pip install -e .[dev]
 ```
 
+
 ## Command-Line Tools
 
-| Command               | Description                                                     |
-|-----------------------|-----------------------------------------------------------------|
-| `generate-peptides`  | Generate random peptide sequences based on user-defined constraints and modifications |
-| `fasta2smi`          | Convert a FASTA file of peptide sequences into SMILES format    |
-| `modify-smiles`      | Apply modifications (N-methylation, PEGylation) to existing SMILES strings |
-| `smiles-props`       | Compute molecular properties (logP, TPSA, formula, Lipinski rules) from SMILES |
-| `synthesis-check`    | Check synthesis constraints for peptides (*currently only functional for natural amino acids*) |
+| Command             | Description |
+|-------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `generate-peptides`.    | **Summary:** Generates random peptide sequences with user-defined constraints including number of sequences, length range, NCAA percentage, D-stereochemistry rate, and cyclization types. Supports over 100 noncanonical amino acids (SwissSidechain).<br>**Input:** CLI arguments for generation settings and output filename.<br>**Output:** FASTA file with single-letter codes, including noncanonical residues. |
+| `fasta2smi`             | **Summary:** Converts peptide sequences from FASTA format into SMILES, parsing cyclization tags from the FASTA header. Supports five cyclization types: disulfide (SS), head-to-tail (HT), sidechain-to-sidechain (SCSC), sidechain-to-head (SCNT), and sidechain-to-tail (SCCT).<br>**Input:** Peptide FASTA file, optional cyclization tags.<br>**Output:** `.p2smi` file containing amino acid sequence, cyclization type, and SMILES string. |
+| `modify-smiles`         | **Summary:** Applies random N-methylation and PEGylation to SMILES strings. Modifications are probabilistic and tracked when input is in `.p2smi` format.<br>**Input:** Plaintext SMILES file or `.p2smi` file.<br>**Output:** Modified SMILES in same format as input, with changes recorded. |
+| `smiles-props`          | **Summary:** Computes a wide range of molecular properties from SMILES, including MW, TPSA, logP, H-bond donors/acceptors, rotatable bonds, ring count, fraction Csp3, heavy atoms, formal charge, molecular formula, and Lipinski rule evaluation.<br>**Input:** SMILES text file or `.p2smi` file.<br>**Output:** JSON-formatted text file with calculated properties for each SMILES. |
+| `synthesis-check`       | **Summary:** Evaluates peptide sequences for synthetic feasibility using hard-coded filters (e.g., N/Q at N-terminus, Gly/Pro motifs, Cys count, hydrophobicity, charge distribution). Currently supports natural amino acids only.<br>**Input:** FASTA file.<br>**Output:** FASTA file with headers annotated as PASS/FAIL. |
 
-> Run each command with `--help` to view usage and options:
+Use `--help` on any command for options:
 ```bash
-generate-peptides --help
 fasta2smi --help
-modify-smiles --help
-smiles-props --help
-synthesis-check --help
 ```
+
 
 ## Example Usage
+**Generate random peptides with constraints:**
 
-**Generate 10 random peptides:**
 ```bash
 generate-peptides \
-    --max_seq_len 20 \
-    --min_seq_len 10 \
-    --noncanonical_percent 0.1 \
-    --lowercase_percent 0.1 \
-    --num_sequences 10 \
-    --constraints all \
-    --outfile peptides.fasta
+  --num 10 \
+  --min_length 10 \
+  --max_length 20 \
+  --noncanonical 0.1 \
+  --dextro 0.1 \
+  --cyclization_constraints all \
+  --outfile peptides.fasta
 ```
 
-**Convert a FASTA file to SMILES:**
+**Convert FASTA to SMILES:**
+
 ```bash
-fasta2smi -i peptides.fasta -o output.p2smi
+fasta2smi -i peptides.fasta -o peptides.p2smi
 ```
 
-**Modify existing SMILES strings (N-methylation/PEGylation):**
+**Modify SMILES strings:**
+
 ```bash
-modify-smiles -i input.smi -o modified.smi --peg_rate 0.3 --nmeth_rate 0.2 --nmeth_residues 0.25
+modify-smiles -i peptides.p2smi -o modified.p2smi --peg_rate 0.2 --nmeth_rate 0.2 --nmeth_residues 0.2
 ```
 
-**Compute properties of a SMILES string:**
+**Compute molecular properties:**
+
 ```bash
-smiles-props "C1CC(NC(=O)C2CC2)C1"
+smiles-props -i modified.p2smi
 ```
 
-**Check synthetic feasability**
+**Check synthesis feasibility (natural AAs only):**
+
 ```bash
-synthesis-check natural_peptides.fasta # only works for natural amino acids
+generate-peptides -o nat_peptides.fasta
+synthesis-check -i nat_peptides.fasta
 ```
+
 
 ## Future Work
-- Expand support for additional post-translational modifications (build importer)
-- Enhance synthesis-check with rules for noncanonical amino acid and modified peptides
-- Expand usage of mol files (applying RDKit's Chem.MolFromSmiles() function)
-- Include alternative encodings (HELM, SELFIES, etc.)
-- Enable batch processing/threading for high-throughput analysis
-- Incorporate predictive models for synthesis of unnatural amino acids
+
+- Extend synthesis rules to NCAAs and modified peptides
+- Support alternative encodings (HELM, SELFIES)
+- Batch processing and multiprocessing support
+- Integration with predictive models
+- Post-translational modification import pipelines
+
 
 ## For Contributors
-There are several ways you can contribute to this project:
 
-- Reporting Bugs: If you encounter any issues or unexpected behavior, please let us know by opening an issue.
-- Suggesting Enhancements: Have ideas to improve the project? We’d love to hear them! Share your suggestions by opening an issue.
-- Submitting Pull Requests: If you’d like to fix a bug or implement a new feature, you can submit a pull request.
-- Improving Documentation: Clear and comprehensive documentation helps everyone.
+You’re welcome to contribute! Suggestions, bugs, and pull requests are appreciated.
+
+- 📂 [Open an Issue](https://github.com/AaronFeller/p2smi/issues)
+- 🛠 Submit a pull request
+- 📝 Improve the docs
+
 
 ## License
+
 [MIT License](https://github.com/AaronFeller/p2smi/blob/master/LICENSE)
 
+
 ## Citation
-> If you use this tool, please cite:  
-- [Peptide-Aware Chemical Language Model Successfully Predicts Membrane Diffusion of Cyclic Peptides (JCIM)](https://pubs.acs.org/doi/10.1021/acs.jcim.4c01441)  
-A JOSS paper will follow.
+
+If you use this tool, please cite:
+
+*p2smi: A Python Toolkit for Peptide FASTA-to-SMILES Conversion and Molecular Property Analysis*.  
+Feller, A. L. and Wilke, C. O. (2025).  
+[arXiv](https://arxiv.org/abs/2505.00719)
+
+A JOSS publication for this package is in review.
