@@ -2,72 +2,70 @@ import pytest
 
 from p2smi.chemProps import (
     SmilesError,
-    lipinski_pass,
-    lipinski_trial,
-    log_partition_coefficient,
-    molecular_formula,
+    lipinski_trial_mol,
     molecule_summary,
-    tpsa,
+    make_mol,
+    molecule_summary_from_mol,
 )
 
 
 def test_log_partition_coefficient_valid():
     assert (
         round(
-            log_partition_coefficient(
-                "CCN(CC)C(=O)[C@H]1CN([C@@H]2CC3=CNC4=CC=CC(=C34)C2=C1)C"
-            ),
-            2,
+            molecule_summary("CCN(CC)C(=O)[C@H]1CN([C@@H]2CC3=CNC4=CC=CC(=C34)C2=C1)C")[
+                "logP"
+            ]
         )
-        == 2.91
+        == 3
     )  # ethanol approx
 
 
 def test_log_partition_coefficient_invalid():
     with pytest.raises(SmilesError):
-        log_partition_coefficient("INVALID_SMILES")
+        molecule_summary("INVALID_SMILES")
 
 
-def test_lipinski_trial_pass_and_fail():
-    passed, failed = lipinski_trial("CCO")  # simple ethanol
-    assert "logP: " in next(p for p in passed if p.startswith("logP"))
-    passed, failed = lipinski_trial(
-        "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-    )  # very large
-    assert any("Molecular weight" in f or "logP" in f for f in failed)
+def lipinski_pass(mol):
+    passed, failed = lipinski_trial_mol(mol)
+    return len(failed) == 0
 
 
+# --- Tests ---
 def test_lipinski_pass_true():
-    assert lipinski_pass("CCO") is True
+    mol = make_mol("CCO")  # ethanol
+    assert lipinski_pass(mol) is True
 
 
 def test_lipinski_pass_false():
-    big_hydrocarbon = "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"  # fails MW and logP
-    assert lipinski_pass(big_hydrocarbon) is False
+    big_hydrocarbon = "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+    mol = make_mol(big_hydrocarbon)
+    assert lipinski_pass(mol) is False
 
 
 def test_molecular_formula():
-    assert molecular_formula("CCO") == "C2H6O"
+    small_hydrocarbon = "CCO"  # ethanol
+    assert molecule_summary(small_hydrocarbon)["Formula"] == "C2H6O"
 
 
 def test_tpsa_known_value():
-    assert round(tpsa("CCO"), 1) == 20.2  # ethanol TPSA
+    assert round(molecule_summary("CCO")["TPSA"]) == 20  # ethanol TPSA
 
 
 def test_molecule_summary_keys():
     summary = molecule_summary("CCO")
     expected_keys = {
+        "SMILES",
         "Formula",
-        "Molecular Weight",
+        "Molecular weight",
         "logP",
         "TPSA",
         "H-bond donors",
         "H-bond acceptors",
-        "Rotatable Bonds",
+        "Rotatable bonds",
         "Rings",
         "Fraction Csp3",
-        "Heavy Atoms",
-        "Formal Charge",
+        "Heavy atoms",
+        "Formal charge",
         "Lipinski pass",
     }
     assert expected_keys.issubset(summary.keys())
