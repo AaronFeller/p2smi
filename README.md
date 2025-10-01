@@ -68,7 +68,6 @@ fasta2smi --help
 
 
 ## Example Usage
-
 **Generate random peptides with constraints:**
 
 ```bash
