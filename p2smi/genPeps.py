@@ -158,7 +158,7 @@ def main():
     # if constraints is "all", use all supported constraints
     if args.cyclization_constraints == "all":
         constraints = ["SS", "HT", "SCNT", "SCCT", "SCSC"]
-    elif args.cyclization_constraints == None:
+    elif args.cyclization_constraints is None:
         constraints = []
     else:
         constraints = [args.cyclization_constraints]

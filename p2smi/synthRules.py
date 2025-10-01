@@ -106,8 +106,8 @@ def collect_synthesis_issues(seq):
         logp_val = log_partition_coefficient(smiles)
         if logp_val > 0:
             issues.append(f"Failed hydrophobicity: logP {logp_val:.2f}")
-    except Exception as e:
-        issues.append(f"Failed to generate SMILES, logP not checked.")
+    except Exception:
+        issues.append("Failed to generate SMILES, logP not checked.")
         smiles = None
 
     # Check charge distribution
@@ -125,9 +125,6 @@ def collect_synthesis_issues(seq):
         if result:
             issues.append(result)
     return issues
-
-
-import re
 
 
 def evaluate_line(line):
@@ -159,7 +156,7 @@ def evaluate_file(input_file, output_file=None):
             results.append(result)
 
     # Write results to output file if provided
-    if output_file != None:
+    if output_file is not None:
         with open(output_file, "w") as out:
             for line, result in results:
                 if result is None:

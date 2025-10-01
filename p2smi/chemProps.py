@@ -56,7 +56,8 @@ def lipinski_trial_mol(mol: Chem.Mol) -> Tuple[list, list]:
         + (f" (found {hacc})" if hacc > 10 else f" ({hacc})")
     )
     (failed if mw >= 500 else passed).append(
-        f"{'Molecular weight over 500' if mw>=500 else 'Molecular weight'} (calculated {mw:.2f})"
+        f"{'Molecular weight over 500' if mw>=500 else 'Molecular weight'}"
+        f" (calculated {mw:.2f})"
     )
     (failed if clogp >= 5 else passed).append(
         f"{'logP over 5' if clogp>=5 else 'logP'} (calculated {clogp:.2f})"

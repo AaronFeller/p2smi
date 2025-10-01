@@ -5,7 +5,6 @@ from p2smi.chemProps import (
     lipinski_trial_mol,
     molecule_summary,
     make_mol,
-    molecule_summary_from_mol,
 )
 
 

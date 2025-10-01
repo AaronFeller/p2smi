@@ -190,7 +190,8 @@ def _preserve_seq_type(orig, letters_list):
 
 
 def can_ssbond(peptideseq):
-    """Disulphide: need at least two Cys-like residues; pick the pair with max separation (>=3 apart)."""
+    """Disulphide: need at least two Cys-like residues;
+    pick the pair with max separation (>=3 apart)."""
     letters = _normalize_seq_letters(peptideseq)
     dis = _CONSTRAINT_LETTER_SETS["disulphide"]
     locs = [i for i, r in enumerate(letters) if r in dis]
@@ -424,7 +425,8 @@ def pep_positions(linpepseq):
 def constrained_peptide_smiles(peptideseq, pattern, next_bond_id=None):
     """
     Build constrained peptide SMILES.
-    Uses next_bond_id (int) for '*' placeholders when needed; returns (seq, pattern, smiles).
+    Uses next_bond_id (int) for '*' placeholders when needed;
+    returns (seq, pattern, smiles).
     """
     valid_codes = {"C": "disulphide", "Z": "cterm", "N": "nterm", "E": "ester", "X": ""}
     smiles = "O"
