@@ -10,8 +10,10 @@ Uses p2smi.utilities.smilesgen.
 
 import argparse
 import p2smi.utilities.smilesgen as smilesgen
+
 all_aminos = smilesgen.all_aminos
 LETTER2NAME = smilesgen.LETTER2NAME
+
 
 class InvalidConstraintError(Exception):
     # Custom exception for invalid constraints
@@ -67,6 +69,7 @@ def constraint_resolver(sequence, constraint):
     else:
         raise InvalidConstraintError(f"{sequence} has invalid constraint {constraint}")
 
+
 def has_capability(aa, key):
     """
     Return True if the amino acid supports the given capability key.
@@ -82,6 +85,7 @@ def has_capability(aa, key):
             return False
         return True
     return bool(val)
+
 
 def validate_constraint_pattern(peptideseq, pattern):
     """
@@ -100,7 +104,10 @@ def validate_constraint_pattern(peptideseq, pattern):
         return True, "No constraint pattern provided."
 
     if len(mask) != len(seq) and len(mask) > 0:
-        return False, f"Mask length ({len(mask)}) does not match sequence length ({len(seq)})."
+        return (
+            False,
+            f"Mask length ({len(mask)}) does not match sequence length ({len(seq)}).",
+        )
 
     try:
         residues = [all_aminos[LETTER2NAME[r]] for r in seq]
@@ -163,21 +170,27 @@ def validate_constraint_pattern(peptideseq, pattern):
     else:
         return False, f"Unknown constraint tag '{tag}'."
 
+
 def normalize_constraint(result):
     # if it's a tuple like (seq, pattern)
     if isinstance(result, tuple):
         return result[1]
     return result
 
+
 def process_constraints(fasta_file):
     return (
         (
-            seq, constr if "X" in constr else normalize_constraint(
-                constraint_resolver(seq, constr)
-            )
+            seq,
+            (
+                constr
+                if "X" in constr
+                else normalize_constraint(constraint_resolver(seq, constr))
+            ),
         )
         for seq, constr in parse_fasta(fasta_file)
     )
+
 
 def generate_smiles_strings(input_fasta, out_file, verbose=False):
     resolved_sequences = list(process_constraints(input_fasta))  # <-- materialize
@@ -191,8 +204,10 @@ def generate_smiles_strings(input_fasta, out_file, verbose=False):
             continue
 
     smilesgen.write_library(
-        (smilesgen.constrained_peptide_smiles(seq, constr)
-        for seq, constr in resolved_sequences),
+        (
+            smilesgen.constrained_peptide_smiles(seq, constr)
+            for seq, constr in resolved_sequences
+        ),
         out_file,
         write="text",
         write_to_file=True,
@@ -203,34 +218,39 @@ def main():
     # CLI entry point: takes FASTA file input, output file path, and generates structures
     parser = argparse.ArgumentParser(
         description=(
-            "Convert peptide FASTA files into SMILES strings with optional structural constraints.\n\n"
+            "Convert peptide FASTA files into SMILES strings with optional structural "
+            "constraints.\n\n"
             "Each FASTA entry should use the notation:\n"
             "  >peptide_name|CONSTRAINT\n"
             "  ACDEFGHIKLMNPQRSTVWY\n\n"
-            
             "  If CONSTRAINT is not used, peptide will be treated as linear.\n\n"
-            "  To let the program infer residues for CONSTRAINT, use:\n" 
+            "  To let the program infer residues for CONSTRAINT, use:\n"
             "    '>PEPTIDE_NAME|{SS,HT,SCSC,SCNT,SCCT}'.\n\n"
             "  To define cyclization residues manually, encode pattern using:\n"
             "    X    - Any residue\n"
             "    C    - Cysteine (for disulfide bonds)\n"
             "    N    - Residue bonded to N-terminal (e.g., K, S, T, Y, C)\n"
-            "    Z    - Residue bonded to C-terminal (e.g., D, E, K, R)\n\n" 
-            
+            "    Z    - Residue bonded to C-terminal (e.g., D, E, K, R)\n\n"
             "  Example manual CONSTRAINT:\n"
             "    SS   - SSXXXXCXXXCX (Disulfide bond)\n"
             "    SCSC - SCXXNXXXXZ (Sidechain–sidechain linkage)\n"
             "    SCNT - SCXXNXXXXXX (Sidechain–N-terminus linkage)\n"
             "    SCCT - SCXXXXXZXXX (Sidechain–C-terminus linkage)\n\n"
-            "Residue capabilities are validated using the amino acid database in p2smi.utilities.smilesgen.\n"
-            "If an invalid or incompatible pattern is detected, a warning is printed and the peptide is skipped.\n\n"
+            "Residue capabilities are validated using the amino acid database"
+            " in p2smi.utilities.smilesgen.\n"
+            "If an invalid or incompatible pattern is detected, a warning is"
+            " printed and the peptide is skipped.\n\n"
             "For documentation and examples, visit: https://github.com/aaronfeller/p2smi"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
-)
-    parser.add_argument("-i", "--input_fasta", required=True, help="FASTA file of peptides.")
+    )
+    parser.add_argument(
+        "-i", "--input_fasta", required=True, help="FASTA file of peptides."
+    )
     parser.add_argument("-o", "--out_file", required=True, help="Output file.")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output.")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose output."
+    )
     args = parser.parse_args()
 
     generate_smiles_strings(args.input_fasta, args.out_file, args.verbose)
