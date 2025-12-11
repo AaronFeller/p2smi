@@ -26,13 +26,9 @@ Developed in support of [PeptideCLM](https://pubs.acs.org/doi/10.1021/acs.jcim.4
 
 ## Citation
 
-If you use this tool, please cite:
+If you use this tool, please cite our paper at the link below:
 
-*p2smi: A Python Toolkit for Peptide FASTA-to-SMILES Conversion and Molecular Property Analysis*.  
-Feller, A. L. and Wilke, C. O. (2025).  
-[arXiv](https://arxiv.org/abs/2505.00719)
-
-A JOSS publication for this package is in review.
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.08319/status.svg)](https://doi.org/10.21105/joss.08319)
 
 ## Manuscript
 - [PDF](manuscript/paper.pdf) | [Markdown](manuscript/paper.md)
