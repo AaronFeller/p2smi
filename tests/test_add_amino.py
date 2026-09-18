@@ -1,11 +1,8 @@
-from pathlib import Path
-
 import pytest
 from rdkit import Chem
 
 from p2smi.add_amino import (
     AminoLibraryError,
-    append_entry_to_registry,
     build_registry_residue,
     main,
     smiles_from_mol_file,
@@ -80,6 +77,6 @@ def test_mol_file_input_creates_v2_residue_without_smiles_argument(tmp_path):
     residue = ResidueRegistry.read_json(registry_file).resolve("LAB_MOL_001")
     assert residue.smiles == smiles_from_mol_file(mol_file)
     assert "constraints" not in registry_file.read_text()
-    assert Chem.MolToSmiles(Chem.MolFromSmiles(residue.smiles), isomericSmiles=True) == (
-        Chem.MolToSmiles(Chem.MolFromSmiles(source_smiles), isomericSmiles=True)
-    )
+    assert Chem.MolToSmiles(
+        Chem.MolFromSmiles(residue.smiles), isomericSmiles=True
+    ) == (Chem.MolToSmiles(Chem.MolFromSmiles(source_smiles), isomericSmiles=True))

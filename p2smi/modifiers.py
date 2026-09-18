@@ -26,12 +26,8 @@ LIPID_LINKERS = {
     "aeea": "*C(=O)COCCOCCN[1*]",
     "aeea2": "*C(=O)COCCOCCNC(=O)COCCOCCN[1*]",
     "gamma_glu": "*C(=O)CC[C@H](N[1*])C(=O)O",
-    "gamma_glu_aeea": (
-        "*C(=O)CC[C@H](NC(=O)COCCOCCN[1*])C(=O)O"
-    ),
-    "gamma_glu_aeea2": (
-        "*C(=O)CC[C@H](NC(=O)COCCOCCNC(=O)COCCOCCN[1*])C(=O)O"
-    ),
+    "gamma_glu_aeea": ("*C(=O)CC[C@H](NC(=O)COCCOCCN[1*])C(=O)O"),
+    "gamma_glu_aeea2": ("*C(=O)CC[C@H](NC(=O)COCCOCCNC(=O)COCCOCCN[1*])C(=O)O"),
 }
 
 
@@ -61,9 +57,14 @@ class SiteSelector:
         return selector
 
     def validate(self) -> None:
-        modes = sum(value is not None for value in (self.role, self.terminus, self.atom_index, self.smarts))
+        modes = sum(
+            value is not None
+            for value in (self.role, self.terminus, self.atom_index, self.smarts)
+        )
         if modes != 1:
-            raise ModificationError("A site selector must specify exactly one selection mode")
+            raise ModificationError(
+                "A site selector must specify exactly one selection mode"
+            )
         if self.residue is not None and (
             not isinstance(self.residue, int)
             or isinstance(self.residue, bool)
@@ -71,7 +72,8 @@ class SiteSelector:
             or self.terminus is not None
         ):
             raise ModificationError(
-                "residue must be a positive integer combined with role, atom_index, or SMARTS"
+                "residue must be a positive integer combined with role, "
+                "atom_index, or SMARTS"
             )
         if self.role is not None and self.role not in SITE_ROLES:
             raise ModificationError(f"Unknown site role: {self.role}")
@@ -91,7 +93,9 @@ class SiteSelector:
             or isinstance(self.match_index, bool)
             or self.match_index < 0
         ):
-            raise ModificationError("match_index requires SMARTS and must be non-negative")
+            raise ModificationError(
+                "match_index requires SMARTS and must be non-negative"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         fields = {
@@ -144,8 +148,14 @@ class ModifierDefinition:
         return definition
 
     def validate(self) -> None:
-        if not isinstance(self.id, str) or not self.id or not self.id.replace("_", "").isalnum():
-            raise ModificationError("Modifier id must contain only letters, digits, and underscores")
+        if (
+            not isinstance(self.id, str)
+            or not self.id
+            or not self.id.replace("_", "").isalnum()
+        ):
+            raise ModificationError(
+                "Modifier id must contain only letters, digits, and underscores"
+            )
         if not isinstance(self.name, str) or not self.name.strip():
             raise ModificationError(f"Modifier {self.id} has an empty name")
         if self.operation not in {
@@ -156,16 +166,22 @@ class ModifierDefinition:
             "reaction",
         }:
             raise ModificationError(f"Unsupported modifier operation: {self.operation}")
-        if not self.allowed_roles or any(role not in SITE_ROLES for role in self.allowed_roles):
+        if not self.allowed_roles or any(
+            role not in SITE_ROLES for role in self.allowed_roles
+        ):
             raise ModificationError(f"Modifier {self.id} has invalid allowed_roles")
         if self.operation == "graft":
             _validate_graft_fragment(self.fragment_smiles, self.id)
         elif self.fragment_smiles is not None:
-            raise ModificationError(f"Modifier {self.id} does not accept fragment_smiles")
+            raise ModificationError(
+                f"Modifier {self.id} does not accept fragment_smiles"
+            )
         if self.operation == "reaction":
             _validate_reaction_smarts(self.reaction_smarts, self.id)
         elif self.reaction_smarts is not None:
-            raise ModificationError(f"Modifier {self.id} does not accept reaction_smarts")
+            raise ModificationError(
+                f"Modifier {self.id} does not accept reaction_smarts"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         data = {
@@ -221,7 +237,10 @@ class Recipe:
         if not isinstance(data, Mapping) or set(data) - {"id", "steps"}:
             raise ModificationError("Recipe must contain only id and steps")
         try:
-            recipe = cls(data["id"], tuple(ModificationStep.from_dict(step) for step in data["steps"]))
+            recipe = cls(
+                data["id"],
+                tuple(ModificationStep.from_dict(step) for step in data["steps"]),
+            )
         except (KeyError, TypeError) as exc:
             raise ModificationError(f"Malformed recipe: {exc}") from exc
         if not recipe.id or not recipe.steps:
@@ -248,9 +267,15 @@ class ModifierRegistry:
         for recipe in recipes:
             if recipe.id in self.recipes:
                 raise ModificationError(f"Duplicate recipe id: {recipe.id}")
-            unknown = [step.modifier for step in recipe.steps if step.modifier not in self.modifiers]
+            unknown = [
+                step.modifier
+                for step in recipe.steps
+                if step.modifier not in self.modifiers
+            ]
             if unknown:
-                raise ModificationError(f"Recipe {recipe.id} uses unknown modifiers: {unknown}")
+                raise ModificationError(
+                    f"Recipe {recipe.id} uses unknown modifiers: {unknown}"
+                )
             self.recipes[recipe.id] = recipe
 
     def merge(self, overlay: "ModifierRegistry") -> "ModifierRegistry":
@@ -284,7 +309,9 @@ class ModifierRegistry:
             raise ModificationError("Modifier registry must be an object")
         unknown = set(document) - {"schema_version", "kind", "modifiers", "recipes"}
         if unknown:
-            raise ModificationError(f"Unknown modifier registry fields: {sorted(unknown)}")
+            raise ModificationError(
+                f"Unknown modifier registry fields: {sorted(unknown)}"
+            )
         if document.get("schema_version") != SCHEMA_VERSION:
             raise ModificationError("Unsupported modifier registry schema version")
         if document.get("kind") != "p2smi_modifier_registry":
@@ -311,33 +338,46 @@ class ModifierRegistry:
         try:
             document = json.loads(file_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            raise ModificationError(f"Could not read modifier registry {file_path}: {exc}") from exc
+            raise ModificationError(
+                f"Could not read modifier registry {file_path}: {exc}"
+            ) from exc
         return cls.from_document(document, base=base)
 
 
 def _validate_graft_fragment(fragment_smiles: Optional[str], modifier_id: str) -> None:
     if not isinstance(fragment_smiles, str):
-        raise ModificationError(f"Graft modifier {modifier_id} requires fragment_smiles")
+        raise ModificationError(
+            f"Graft modifier {modifier_id} requires fragment_smiles"
+        )
     mol = Chem.MolFromSmiles(fragment_smiles)
     if mol is None:
         raise ModificationError(f"Modifier {modifier_id} has invalid fragment SMILES")
     dummies = [atom for atom in mol.GetAtoms() if atom.GetAtomicNum() == 0]
     if len(dummies) != 1 or dummies[0].GetDegree() != 1:
-        raise ModificationError(f"Modifier {modifier_id} requires one terminal '*' attachment atom")
+        raise ModificationError(
+            f"Modifier {modifier_id} requires one terminal '*' attachment atom"
+        )
 
 
 def _validate_reaction_smarts(reaction_smarts: Optional[str], modifier_id: str) -> None:
     if not isinstance(reaction_smarts, str) or not reaction_smarts.strip():
-        raise ModificationError(f"Reaction modifier {modifier_id} requires reaction_smarts")
+        raise ModificationError(
+            f"Reaction modifier {modifier_id} requires reaction_smarts"
+        )
     if len(reaction_smarts) > 4096:
         raise ModificationError(f"Reaction SMARTS for {modifier_id} is too long")
     try:
         reaction = rdChemReactions.ReactionFromSmarts(reaction_smarts)
     except Exception as exc:
-        raise ModificationError(f"Modifier {modifier_id} has invalid reaction SMARTS") from exc
+        raise ModificationError(
+            f"Modifier {modifier_id} has invalid reaction SMARTS"
+        ) from exc
     if reaction is None:
         raise ModificationError(f"Modifier {modifier_id} has invalid reaction SMARTS")
-    if reaction.GetNumReactantTemplates() != 1 or reaction.GetNumProductTemplates() != 1:
+    if (
+        reaction.GetNumReactantTemplates() != 1
+        or reaction.GetNumProductTemplates() != 1
+    ):
         raise ModificationError(
             f"Reaction modifier {modifier_id} requires one reactant and one product"
         )
@@ -345,29 +385,55 @@ def _validate_reaction_smarts(reaction_smarts: Optional[str], modifier_id: str) 
     product = reaction.GetProductTemplate(0)
     if reactant.GetNumAtoms() > 256 or product.GetNumAtoms() > 256:
         raise ModificationError(f"Reaction SMARTS for {modifier_id} is too large")
-    reactant_maps = [atom.GetAtomMapNum() for atom in reactant.GetAtoms() if atom.GetAtomMapNum()]
-    product_maps = [atom.GetAtomMapNum() for atom in product.GetAtoms() if atom.GetAtomMapNum()]
+    reactant_maps = [
+        atom.GetAtomMapNum() for atom in reactant.GetAtoms() if atom.GetAtomMapNum()
+    ]
+    product_maps = [
+        atom.GetAtomMapNum() for atom in product.GetAtoms() if atom.GetAtomMapNum()
+    ]
     if reactant_maps.count(1) != 1 or product_maps.count(1) != 1:
         raise ModificationError(
             f"Reaction modifier {modifier_id} requires atom map :1 once on each side"
         )
-    if len(reactant_maps) != len(set(reactant_maps)) or len(product_maps) != len(set(product_maps)):
-        raise ModificationError(f"Reaction modifier {modifier_id} has duplicate atom maps")
+    if len(reactant_maps) != len(set(reactant_maps)) or len(product_maps) != len(
+        set(product_maps)
+    ):
+        raise ModificationError(
+            f"Reaction modifier {modifier_id} has duplicate atom maps"
+        )
     if not set(product_maps).issubset(reactant_maps):
         raise ModificationError(
-            f"Reaction modifier {modifier_id} has product atom maps absent from the reactant"
+            f"Reaction modifier {modifier_id} has product atom maps absent "
+            "from the reactant"
         )
 
 
 def builtin_modifier_registry() -> ModifierRegistry:
     amines = ("n_terminal_amine", "sidechain_amine")
     definitions = [
-        ModifierDefinition("n_methyl", "Backbone N-methylation", "n_methyl", ("backbone_n", "backbone_amide_n")),
-        ModifierDefinition("n_acetyl", "N-terminal acetylation", "graft", ("n_terminal_amine",), "CC(=O)*"),
-        ModifierDefinition("c_amide", "C-terminal amidation", "c_amide", ("c_terminal_carboxyl",)),
+        ModifierDefinition(
+            "n_methyl",
+            "Backbone N-methylation",
+            "n_methyl",
+            ("backbone_n", "backbone_amide_n"),
+        ),
+        ModifierDefinition(
+            "n_acetyl",
+            "N-terminal acetylation",
+            "graft",
+            ("n_terminal_amine",),
+            "CC(=O)*",
+        ),
+        ModifierDefinition(
+            "c_amide", "C-terminal amidation", "c_amide", ("c_terminal_carboxyl",)
+        ),
         ModifierDefinition("mpeg_acetyl", "Methoxy-PEG acylation", "mpeg_acyl", amines),
-        ModifierDefinition("octanoyl", "Octanoylation", "graft", amines, "CCCCCCCC(=O)*"),
-        ModifierDefinition("decanoyl", "Decanoylation", "graft", amines, "CCCCCCCCCC(=O)*"),
+        ModifierDefinition(
+            "octanoyl", "Octanoylation", "graft", amines, "CCCCCCCC(=O)*"
+        ),
+        ModifierDefinition(
+            "decanoyl", "Decanoylation", "graft", amines, "CCCCCCCCCC(=O)*"
+        ),
         ModifierDefinition(
             "dodecanoyl", "Dodecanoylation", "graft", amines, "CCCCCCCCCCCC(=O)*"
         ),
@@ -378,8 +444,12 @@ def builtin_modifier_registry() -> ModifierRegistry:
             amines,
             "CCCCCCCCCCCCCC(=O)*",
         ),
-        ModifierDefinition("palmitoyl", "Palmitoylation", "graft", amines, "CCCCCCCCCCCCCCCC(=O)*"),
-        ModifierDefinition("stearoyl", "Stearoylation", "graft", amines, "CCCCCCCCCCCCCCCCCC(=O)*"),
+        ModifierDefinition(
+            "palmitoyl", "Palmitoylation", "graft", amines, "CCCCCCCCCCCCCCCC(=O)*"
+        ),
+        ModifierDefinition(
+            "stearoyl", "Stearoylation", "graft", amines, "CCCCCCCCCCCCCCCCCC(=O)*"
+        ),
         ModifierDefinition(
             "eicosanoyl",
             "Eicosanoylation",
@@ -408,10 +478,30 @@ def builtin_modifier_registry() -> ModifierRegistry:
             amines,
             "O=C(O)" + "C" * 18 + "C(=O)*",
         ),
-        ModifierDefinition("carbamidomethyl", "Thiol carbamidomethylation", "graft", ("sidechain_thiol",), "NC(=O)C*"),
-        ModifierDefinition("phosphoryl", "Hydroxyl phosphorylation", "graft", ("sidechain_hydroxyl",), "P(=O)(O)(O)*"),
-        ModifierDefinition("azidoacetyl", "Azidoacetyl click handle", "graft", amines, "[N-]=[N+]=NCC(=O)*"),
-        ModifierDefinition("propiolyl", "Propiolyl click handle", "graft", amines, "C#CC(=O)*"),
+        ModifierDefinition(
+            "carbamidomethyl",
+            "Thiol carbamidomethylation",
+            "graft",
+            ("sidechain_thiol",),
+            "NC(=O)C*",
+        ),
+        ModifierDefinition(
+            "phosphoryl",
+            "Hydroxyl phosphorylation",
+            "graft",
+            ("sidechain_hydroxyl",),
+            "P(=O)(O)(O)*",
+        ),
+        ModifierDefinition(
+            "azidoacetyl",
+            "Azidoacetyl click handle",
+            "graft",
+            amines,
+            "[N-]=[N+]=NCC(=O)*",
+        ),
+        ModifierDefinition(
+            "propiolyl", "Propiolyl click handle", "graft", amines, "C#CC(=O)*"
+        ),
     ]
     return ModifierRegistry(definitions)
 
@@ -423,7 +513,9 @@ def _carboxyl_groups(mol: Chem.Mol) -> list[tuple[int, int]]:
 
 def _n_terminal_indices(mol: Chem.Mol) -> list[int]:
     candidates = []
-    for match in mol.GetSubstructMatches(Chem.MolFromSmarts("[N;H1,H2;!$(N-C=O):1]-[C:2]-[C:3](=O)")):
+    for match in mol.GetSubstructMatches(
+        Chem.MolFromSmarts("[N;H1,H2;!$(N-C=O):1]-[C:2]-[C:3](=O)")
+    ):
         candidates.append(match[0])
     return sorted(set(candidates))
 
@@ -450,17 +542,23 @@ def _role_indices(mol: Chem.Mol, role: str) -> list[int]:
     if role == "backbone_n":
         return sorted(n_term)
     if role == "backbone_amide_n":
-        pattern = Chem.MolFromSmarts(
-            "[N;H1;X3;$([N]-[C](=O));$([N]-[C]-[C](=O))]"
-        )
+        pattern = Chem.MolFromSmarts("[N;H1;X3;$([N]-[C](=O));$([N]-[C]-[C](=O))]")
         return sorted({match[0] for match in mol.GetSubstructMatches(pattern)})
     if role == "sidechain_amine":
         pattern = Chem.MolFromSmarts("[N;H1,H2;!a;!$(N-C=O):1]")
-        return [match[0] for match in mol.GetSubstructMatches(pattern) if match[0] not in n_term]
+        return [
+            match[0]
+            for match in mol.GetSubstructMatches(pattern)
+            if match[0] not in n_term
+        ]
     if role == "sidechain_hydroxyl":
         acid_oxygens = {oxygen for _, oxygen in _carboxyl_groups(mol)}
         pattern = Chem.MolFromSmarts("[O;H1;X2:1]")
-        return [match[0] for match in mol.GetSubstructMatches(pattern) if match[0] not in acid_oxygens]
+        return [
+            match[0]
+            for match in mol.GetSubstructMatches(pattern)
+            if match[0] not in acid_oxygens
+        ]
     if role == "sidechain_thiol":
         pattern = Chem.MolFromSmarts("[S;H1:1]")
         return [match[0] for match in mol.GetSubstructMatches(pattern)]
@@ -470,7 +568,9 @@ def _role_indices(mol: Chem.Mol, role: str) -> list[int]:
 def resolve_site(mol: Chem.Mol, selector: SiteSelector) -> tuple[int, str]:
     selector.validate()
     if selector.residue is not None:
-        raise ModificationError("Residue-scoped selectors require sequence-aware assembly")
+        raise ModificationError(
+            "Residue-scoped selectors require sequence-aware assembly"
+        )
     if selector.terminus:
         role = "n_terminal_amine" if selector.terminus == "N" else "c_terminal_carboxyl"
         indices = _role_indices(mol, role)
@@ -479,7 +579,9 @@ def resolve_site(mol: Chem.Mol, selector: SiteSelector) -> tuple[int, str]:
         indices = _role_indices(mol, role)
     elif selector.atom_index is not None:
         if selector.atom_index >= mol.GetNumAtoms():
-            raise ModificationError(f"atom_index {selector.atom_index} is outside the molecule")
+            raise ModificationError(
+                f"atom_index {selector.atom_index} is outside the molecule"
+            )
         return selector.atom_index, "atom_index"
     else:
         role = "smarts"
@@ -492,16 +594,14 @@ def resolve_site(mol: Chem.Mol, selector: SiteSelector) -> tuple[int, str]:
         indices = [match[0] for match in matches]
 
     if len(indices) != 1:
-        raise ModificationError(f"Site selector resolved to {len(indices)} atoms; expected exactly one")
+        raise ModificationError(
+            f"Site selector resolved to {len(indices)} atoms; expected exactly one"
+        )
     return indices[0], role
 
 
 def _roles_for_atom(mol: Chem.Mol, atom_idx: int) -> set[str]:
-    roles = {
-        role
-        for role in SITE_ROLES
-        if atom_idx in _role_indices(mol, role)
-    }
+    roles = {role for role in SITE_ROLES if atom_idx in _role_indices(mol, role)}
     if "backbone_n" in roles and atom_idx in _role_indices(mol, "backbone_amide_n"):
         roles.add("backbone_amide_n")
     return roles
@@ -535,7 +635,9 @@ def _finalize_product(rw_mol: Chem.RWMol) -> Chem.Mol:
     try:
         Chem.SanitizeMol(product)
     except Exception as exc:
-        raise ModificationError(f"Modification produced invalid valence: {exc}") from exc
+        raise ModificationError(
+            f"Modification produced invalid valence: {exc}"
+        ) from exc
     if len(Chem.GetMolFrags(product)) != 1:
         raise ModificationError("Modification produced a disconnected molecule")
     for atom in product.GetAtoms():
@@ -545,7 +647,9 @@ def _finalize_product(rw_mol: Chem.RWMol) -> Chem.Mol:
 
 def _graft(mol: Chem.Mol, site_idx: int, fragment_smiles: str) -> Chem.Mol:
     fragment = Chem.MolFromSmiles(fragment_smiles)
-    dummy_idx = next(atom.GetIdx() for atom in fragment.GetAtoms() if atom.GetAtomicNum() == 0)
+    dummy_idx = next(
+        atom.GetIdx() for atom in fragment.GetAtoms() if atom.GetAtomicNum() == 0
+    )
     anchor_idx = fragment.GetAtomWithIdx(dummy_idx).GetNeighbors()[0].GetIdx()
     combined = Chem.CombineMols(mol, fragment)
     offset = mol.GetNumAtoms()
@@ -568,11 +672,14 @@ def _linked_acyl_fragment(fragment_smiles: str, linker_id: str) -> str:
         or cargo_dummies[0].GetNeighbors()[0].GetAtomicNum() != 6
         or not any(
             bond.GetBondType() == Chem.BondType.DOUBLE
-            and bond.GetOtherAtom(cargo_dummies[0].GetNeighbors()[0]).GetAtomicNum() == 8
+            and bond.GetOtherAtom(cargo_dummies[0].GetNeighbors()[0]).GetAtomicNum()
+            == 8
             for bond in cargo_dummies[0].GetNeighbors()[0].GetBonds()
         )
     ):
-        raise ModificationError("Lipid linkers require an acyl modifier with fragment R-C(=O)*")
+        raise ModificationError(
+            "Lipid linkers require an acyl modifier with fragment R-C(=O)*"
+        )
 
     linker_cargo_dummies = [
         atom
@@ -580,7 +687,9 @@ def _linked_acyl_fragment(fragment_smiles: str, linker_id: str) -> str:
         if atom.GetAtomicNum() == 0 and atom.GetIsotope() == 1
     ]
     if len(linker_cargo_dummies) != 1:
-        raise ModificationError(f"Lipid linker {linker_id} has invalid attachment chemistry")
+        raise ModificationError(
+            f"Lipid linker {linker_id} has invalid attachment chemistry"
+        )
     linker_dummy = linker_cargo_dummies[0]
     linker_anchor = linker_dummy.GetNeighbors()[0].GetIdx()
     cargo_dummy = cargo_dummies[0]
@@ -590,13 +699,17 @@ def _linked_acyl_fragment(fragment_smiles: str, linker_id: str) -> str:
     offset = linker.GetNumAtoms()
     rw_mol = Chem.RWMol(combined)
     rw_mol.AddBond(linker_anchor, offset + cargo_anchor, Chem.BondType.SINGLE)
-    for atom_idx in sorted((linker_dummy.GetIdx(), offset + cargo_dummy.GetIdx()), reverse=True):
+    for atom_idx in sorted(
+        (linker_dummy.GetIdx(), offset + cargo_dummy.GetIdx()), reverse=True
+    ):
         rw_mol.RemoveAtom(atom_idx)
     product = rw_mol.GetMol()
     try:
         Chem.SanitizeMol(product)
     except Exception as exc:
-        raise ModificationError(f"Lipid linker produced invalid valence: {exc}") from exc
+        raise ModificationError(
+            f"Lipid linker produced invalid valence: {exc}"
+        ) from exc
     linked_smiles = Chem.MolToSmiles(product, isomericSmiles=True)
     _validate_graft_fragment(linked_smiles, f"{linker_id} linked cargo")
     return linked_smiles
@@ -653,7 +766,9 @@ def _run_custom_reaction(
             products[product_smiles] = product
 
     if not products:
-        raise ModificationError("Custom reaction produced no valid product at the selected site")
+        raise ModificationError(
+            "Custom reaction produced no valid product at the selected site"
+        )
     if len(products) != 1:
         raise ModificationError(
             f"Custom reaction produced {len(products)} products at the selected site"
@@ -700,20 +815,30 @@ def apply_modifier(
             raise ModificationError("c_amide does not accept params")
         groups = dict(_carboxyl_groups(mol))
         if site_idx not in groups:
-            raise ModificationError("C-terminal amidation requires a free carboxylic acid")
+            raise ModificationError(
+                "C-terminal amidation requires a free carboxylic acid"
+            )
         rw_mol = Chem.RWMol(mol)
         nitrogen_idx = rw_mol.AddAtom(Chem.Atom("N"))
         rw_mol.AddBond(site_idx, nitrogen_idx, Chem.BondType.SINGLE)
         rw_mol.RemoveAtom(groups[site_idx])
         return _finalize_product(rw_mol)
     if definition.operation == "mpeg_acyl":
-        if set(params) != {"units"} or not isinstance(params["units"], int) or params["units"] < 1:
-            raise ModificationError("mpeg_acetyl requires a positive integer units parameter")
+        if (
+            set(params) != {"units"}
+            or not isinstance(params["units"], int)
+            or params["units"] < 1
+        ):
+            raise ModificationError(
+                "mpeg_acetyl requires a positive integer units parameter"
+            )
         fragment = "CO" + "CCO" * params["units"] + "CC(=O)*"
         return _graft(mol, site_idx, fragment)
     if definition.operation == "reaction":
         if params:
-            raise ModificationError(f"Reaction modifier {definition.id} does not accept params")
+            raise ModificationError(
+                f"Reaction modifier {definition.id} does not accept params"
+            )
         return _run_custom_reaction(mol, site_idx, definition.reaction_smarts)
     raise ModificationError(f"Unsupported modifier operation: {definition.operation}")
 
@@ -778,7 +903,8 @@ def build_modified_peptide(
                 )
             if step.site.residue > len(tokens):
                 raise ModificationError(
-                    f"Recipe residue {step.site.residue} is outside a {len(tokens)}-residue peptide"
+                    f"Recipe residue {step.site.residue} is outside a "
+                    f"{len(tokens)}-residue peptide"
                 )
             residue_steps.setdefault(step.site.residue - 1, []).append(step)
 

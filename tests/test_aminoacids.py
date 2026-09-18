@@ -34,7 +34,9 @@ def test_amino_acid_library_entries_are_structurally_consistent():
                 continue
             mol = Chem.MolFromSmiles(value)
             assert mol is not None, f"{name}:{key}"
-            assert sum(atom.GetAtomicNum() == 0 for atom in mol.GetAtoms()) == 1, f"{name}:{key}"
+            assert (
+                sum(atom.GetAtomicNum() == 0 for atom in mol.GetAtoms()) == 1
+            ), f"{name}:{key}"
 
     assert len(letters) == len(set(letters))
     assert len(codes) == len(set(codes))

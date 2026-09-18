@@ -29,7 +29,9 @@ def _validate_smiles(smiles, label, *, require_dummy=False):
             f"{label} SMILES must contain exactly one '*' placeholder: {smiles}"
         )
     if not require_dummy and dummy_count != 0:
-        raise AminoLibraryError(f"Base residue SMILES cannot contain '*' placeholders: {smiles}")
+        raise AminoLibraryError(
+            f"Base residue SMILES cannot contain '*' placeholders: {smiles}"
+        )
     return mol
 
 
@@ -74,7 +76,9 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="Add a noncanonical amino acid to a v2 JSON residue registry.",
     )
-    parser.add_argument("--id", dest="residue_id", help="Stable ASCII v2 residue identifier.")
+    parser.add_argument(
+        "--id", dest="residue_id", help="Stable ASCII v2 residue identifier."
+    )
     parser.add_argument("--name", help="Full residue name.")
     parser.add_argument("--code", help="Optional unique residue code alias.")
     parser.add_argument("--letter", help="Optional one-character legacy alias.")
@@ -85,7 +89,10 @@ def parse_args(argv=None):
     structure_source.add_argument(
         "--mol-file",
         type=Path,
-        help="MDL MOL file for the base residue; its canonical isomeric SMILES is stored.",
+        help=(
+            "MDL MOL file for the base residue; its canonical isomeric "
+            "SMILES is stored."
+        ),
     )
     parser.add_argument(
         "--registry-file",

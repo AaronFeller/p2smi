@@ -50,7 +50,10 @@ def test_lmsd_import_skips_non_acids_unless_strict(tmp_path):
 
     registry_file = tmp_path / "lipid-modifiers.json"
     assert import_lipid_modifiers(sdf_file, registry_file) == 1
-    assert ModifierRegistry.read_json(registry_file).modifiers["LMFA01010001"].name == "Octanoic acid"
+    assert (
+        ModifierRegistry.read_json(registry_file).modifiers["LMFA01010001"].name
+        == "Octanoic acid"
+    )
 
     with pytest.raises(ModificationError, match="one free carboxylic acid"):
         import_lipid_modifiers(sdf_file, tmp_path / "strict.json", strict=True)
@@ -82,9 +85,7 @@ def test_lipid_import_rejects_ambiguous_or_non_acid_structures():
         fatty_acid_to_acyl_fragment(Chem.MolFromSmiles("CCCC"))
 
     with pytest.raises(ModificationError, match="not symmetry-equivalent"):
-        fatty_acid_to_acyl_fragment(
-            Chem.MolFromSmiles("O=C(O)CCCC(C)CCC(=O)O")
-        )
+        fatty_acid_to_acyl_fragment(Chem.MolFromSmiles("O=C(O)CCCC(C)CCC(=O)O"))
 
     with pytest.raises(ModificationError, match="connected component"):
         fatty_acid_to_acyl_fragment(Chem.MolFromSmiles("CCCC(=O)O.[Na+]"))

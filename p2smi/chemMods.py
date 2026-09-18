@@ -28,9 +28,7 @@ from p2smi.modifiers import (
 
 RDLogger.DisableLog("rdApp.*")  # quiet RDKit in batch
 
-_AMIDE_N_PATTERN = Chem.MolFromSmarts(
-    "[N;H1;X3;$([N]-[C](=O));$([N]-[C]-[C](=O))]"
-)
+_AMIDE_N_PATTERN = Chem.MolFromSmarts("[N;H1;X3;$([N]-[C](=O));$([N]-[C]-[C](=O))]")
 _PEGYLATION_N_PATTERN = Chem.MolFromSmarts("[N;H1,H2;!$([N]-[C](=O))]")
 
 
@@ -200,7 +198,9 @@ def process_recipe_sequences(fp, recipe_id, registry, on_error="error"):
             yield f"{header or '[Unlabelled]'} [Skipped: {exc}]"
             continue
         annotation = f"[{' - '.join(applied)}]"
-        yield f"{header}{annotation}: {product}" if header else f"{annotation}: {product}"
+        yield (
+            f"{header}{annotation}: {product}" if header else f"{annotation}: {product}"
+        )
 
 
 def process_file(

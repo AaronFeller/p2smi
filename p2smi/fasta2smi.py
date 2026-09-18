@@ -132,7 +132,11 @@ def validate_constraint_pattern(peptideseq, pattern, registry=None):
             return False, f"Undefined residue {exc.args[0]} in sequence."
         residues = legacy_residues
         capabilities = [
-            {key for key in ("disulphide", "nterm", "ester", "cterm") if has_capability(aa, key)}
+            {
+                key
+                for key in ("disulphide", "nterm", "ester", "cterm")
+                if has_capability(aa, key)
+            }
             for aa in residues
         ]
     tag = pattern[:2].upper()
@@ -183,7 +187,10 @@ def validate_constraint_pattern(peptideseq, pattern, registry=None):
     elif tag == "SC":
         codes = set(mask) - {"X"}
         if mask.count("Z") > 1 or mask.count("N") + mask.count("E") > 1:
-            return False, "SC constraint must select at most one acid and one donor site."
+            return (
+                False,
+                "SC constraint must select at most one acid and one donor site.",
+            )
         if ({"N", "E"} & codes) and "Z" in codes:
             subtype = "SCSC"  # sidechain–sidechain
         elif {"N", "E"} & codes:
@@ -220,7 +227,9 @@ def process_constraints(fasta_file, registry=None):
             (
                 constr
                 if "X" in constr
-                else normalize_constraint(constraint_resolver(seq, constr, registry=registry))
+                else normalize_constraint(
+                    constraint_resolver(seq, constr, registry=registry)
+                )
             ),
         )
         for seq, constr in parse_fasta(fasta_file)
@@ -289,7 +298,9 @@ def generate_smiles_strings(
             (
                 smilesgen.constrained_peptide_smiles(seq, constr)
                 if registry is None
-                else smilesgen.constrained_peptide_smiles(seq, constr, registry=registry)
+                else smilesgen.constrained_peptide_smiles(
+                    seq, constr, registry=registry
+                )
             )
             for seq, constr in valid_sequences
         )
@@ -316,7 +327,8 @@ def main(argv=None):
             "  To define cyclization residues manually, encode pattern using:\n"
             "    X    - Any residue\n"
             "    C    - Cysteine (for disulfide bonds)\n"
-            "    N    - Nucleophilic sidechain bonded to C-terminal (e.g., K, S, T, Y, C)\n"
+            "    N    - Nucleophilic sidechain bonded to C-terminal "
+            "(e.g., K, S, T, Y, C)\n"
             "    E    - Ester sidechain bonded to C-terminal (optional advanced form)\n"
             "    Z    - Carboxyl sidechain bonded to N-terminal (e.g., D, E)\n\n"
             "  Example manual CONSTRAINT:\n"

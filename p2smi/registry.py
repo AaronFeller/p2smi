@@ -13,6 +13,8 @@ from rdkit import Chem
 
 SCHEMA_VERSION = 1
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
+
+
 class RegistryError(ValueError):
     """Raised when residue registry data or sequence tokens are invalid."""
 
@@ -34,13 +36,17 @@ class Residue:
         allowed_fields = {"id", "name", "smiles", "code", "legacy_letter"}
         unknown_fields = set(data) - allowed_fields
         if unknown_fields:
-            raise RegistryError(f"Residue entry has unknown fields: {sorted(unknown_fields)}")
+            raise RegistryError(
+                f"Residue entry has unknown fields: {sorted(unknown_fields)}"
+            )
         try:
             identifier = data["id"]
             name = data["name"]
             smiles = data["smiles"]
         except KeyError as exc:
-            raise RegistryError(f"Residue entry is missing required field {exc.args[0]!r}") from exc
+            raise RegistryError(
+                f"Residue entry is missing required field {exc.args[0]!r}"
+            ) from exc
 
         return cls(
             id=identifier,
@@ -56,7 +62,9 @@ class Residue:
             "code": self.code,
             "legacy_letter": self.legacy_letter,
         }
-        entry.update({key: value for key, value in optional_fields.items() if value is not None})
+        entry.update(
+            {key: value for key, value in optional_fields.items() if value is not None}
+        )
         return entry
 
 
@@ -124,7 +132,9 @@ class ResidueRegistry:
             raise RegistryError("Registry document must be an object")
         unknown_fields = set(document) - {"schema_version", "residues"}
         if unknown_fields:
-            raise RegistryError(f"Registry document has unknown fields: {sorted(unknown_fields)}")
+            raise RegistryError(
+                f"Registry document has unknown fields: {sorted(unknown_fields)}"
+            )
         if document.get("schema_version") != SCHEMA_VERSION:
             raise RegistryError(
                 f"Unsupported registry schema version: {document.get('schema_version')!r}"
@@ -145,11 +155,15 @@ class ResidueRegistry:
         return cls.from_document(document)
 
     @classmethod
-    def from_legacy_mapping(cls, mapping: Mapping[str, Mapping[str, Any]]) -> "ResidueRegistry":
+    def from_legacy_mapping(
+        cls, mapping: Mapping[str, Mapping[str, Any]]
+    ) -> "ResidueRegistry":
         residues = []
         for name, props in mapping.items():
             code = props["Code"]
-            identifier = code if IDENTIFIER_PATTERN.fullmatch(code) else f"legacy_{code}"
+            identifier = (
+                code if IDENTIFIER_PATTERN.fullmatch(code) else f"legacy_{code}"
+            )
             residues.append(
                 Residue(
                     id=identifier,
@@ -167,7 +181,8 @@ class ResidueRegistry:
             raise RegistryError("Residue id must be a string")
         if not IDENTIFIER_PATTERN.fullmatch(residue.id):
             raise RegistryError(
-                "Residue id must be ASCII and use letters, digits, underscores, or hyphens"
+                "Residue id must be ASCII and use letters, digits, "
+                "underscores, or hyphens"
             )
         if not isinstance(residue.name, str) or not residue.name.strip():
             raise RegistryError(f"Residue {residue.id} has an empty name")
@@ -175,16 +190,23 @@ class ResidueRegistry:
             raise RegistryError(f"Residue {residue.id} has an empty SMILES string")
         if Chem.MolFromSmiles(residue.smiles) is None:
             raise RegistryError(f"Residue {residue.id} has invalid SMILES")
-        for field_name, value in (("code", residue.code), ("legacy_letter", residue.legacy_letter)):
+        for field_name, value in (
+            ("code", residue.code),
+            ("legacy_letter", residue.legacy_letter),
+        ):
             if value is not None and not isinstance(value, str):
                 raise RegistryError(f"{field_name} must be a string")
             if value and (value.strip() != value or "," in value):
-                raise RegistryError(f"{field_name} cannot contain commas or surrounding whitespace")
+                raise RegistryError(
+                    f"{field_name} cannot contain commas or surrounding whitespace"
+                )
         if residue.legacy_letter and len(residue.legacy_letter) != 1:
             raise RegistryError("legacy_letter must be exactly one character")
 
 
-def parse_sequence_tokens(sequence: str | Iterable[str], registry: ResidueRegistry) -> list[str]:
+def parse_sequence_tokens(
+    sequence: str | Iterable[str], registry: ResidueRegistry
+) -> list[str]:
     """Return canonical residue IDs from a delimited v2 or legacy v1 sequence.
 
     V2 strings must be comma-delimited. Undelimited strings are interpreted only
@@ -204,7 +226,11 @@ def parse_sequence_tokens(sequence: str | Iterable[str], registry: ResidueRegist
     else:
         raw_tokens = list(sequence)
 
-    if not raw_tokens or any(not token or token.strip() != token for token in raw_tokens):
-        raise RegistryError("Sequence tokens must be non-empty and contain no surrounding whitespace")
+    if not raw_tokens or any(
+        not token or token.strip() != token for token in raw_tokens
+    ):
+        raise RegistryError(
+            "Sequence tokens must be non-empty and contain no surrounding whitespace"
+        )
 
     return [registry.resolve(token).id for token in raw_tokens]

@@ -123,7 +123,9 @@ def test_generate_smiles_strings_skips_invalid_sequences(tmp_path, monkeypatch, 
     assert written == [("GA", "HT", "GA-HT")]
 
 
-def test_generate_smiles_strings_uses_custom_registry_for_constrained_sequence(tmp_path):
+def test_generate_smiles_strings_uses_custom_registry_for_constrained_sequence(
+    tmp_path,
+):
     registry_file = tmp_path / "residues.json"
     registry_file.write_text(
         '{"schema_version": 1, "residues": ['

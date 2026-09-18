@@ -2,7 +2,12 @@ import json
 
 import pytest
 
-from p2smi.registry import RegistryError, Residue, ResidueRegistry, parse_sequence_tokens
+from p2smi.registry import (
+    RegistryError,
+    Residue,
+    ResidueRegistry,
+    parse_sequence_tokens,
+)
 from p2smi.utilities.aminoacids import all_aminos
 
 

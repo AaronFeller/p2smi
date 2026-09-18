@@ -104,13 +104,15 @@ def test_main_applies_cli_thresholds(tmp_path):
     output_file = tmp_path / "test_output.txt"
     test_file.write_text(test_content)
 
-    main([
-        "-i",
-        str(test_file),
-        "-o",
-        str(output_file),
-        "--max_length",
-        "2",
-    ])
+    main(
+        [
+            "-i",
+            str(test_file),
+            "-o",
+            str(output_file),
+            "--max_length",
+            "2",
+        ]
+    )
 
     assert "FAIL" in output_file.read_text()

@@ -10,7 +10,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 
 # Import amino acid definitions
-from p2smi.registry import ResidueRegistry, parse_sequence_tokens
+from p2smi.registry import parse_sequence_tokens
 from p2smi.utilities.aminoacids import all_aminos
 
 from functools import lru_cache
@@ -55,7 +55,9 @@ class SmilesError(CustomError):
 
 
 PEPTIDE_BOND_REACTION = AllChem.ReactionFromSmarts(
-    "[N:5][C:4][C:1](=[O:2])[OH:3].[N;H1,H2:6][C:7][C:8](=[O:9])[OH:10]>>[N:5][C:4][C:1](=[O:2])[N:6][C:7][C:8](=[O:9])[OH:10]"
+    "[N:5][C:4][C:1](=[O:2])[OH:3]."
+    "[N;H1,H2:6][C:7][C:8](=[O:9])[OH:10]>>"
+    "[N:5][C:4][C:1](=[O:2])[N:6][C:7][C:8](=[O:9])[OH:10]"
 )
 
 
@@ -202,7 +204,9 @@ def _registry_sequence_sites(peptideseq, registry):
         residue = registry.resolve(token)
         mol = _mol_from_smiles(residue.smiles, context=f"residue {residue.id}")
         candidates = _reactive_site_indices(mol)
-        sites.append({kind for kind, indices in candidates.items() if len(indices) == 1})
+        sites.append(
+            {kind for kind, indices in candidates.items() if len(indices) == 1}
+        )
     return tokens, sites
 
 
@@ -467,7 +471,10 @@ def _find_terminal_carboxyl(mol):
             if neighbor.GetAtomicNum() == 8:
                 if bond.GetBondType() == Chem.BondType.DOUBLE:
                     double_oxygens.append(neighbor.GetIdx())
-                elif bond.GetBondType() == Chem.BondType.SINGLE and neighbor.GetDegree() == 1:
+                elif (
+                    bond.GetBondType() == Chem.BondType.SINGLE
+                    and neighbor.GetDegree() == 1
+                ):
                     hydroxyl_oxygens.append(neighbor.GetIdx())
             elif neighbor.GetAtomicNum() == 6:
                 carbon_neighbors.append(neighbor)
@@ -476,7 +483,11 @@ def _find_terminal_carboxyl(mol):
             continue
 
         if any(
-            any(nn.GetAtomicNum() == 7 for nn in carbon.GetNeighbors() if nn.GetIdx() != atom.GetIdx())
+            any(
+                nn.GetAtomicNum() == 7
+                for nn in carbon.GetNeighbors()
+                if nn.GetIdx() != atom.GetIdx()
+            )
             for carbon in carbon_neighbors
         ):
             matches.append((atom.GetIdx(), hydroxyl_oxygens[0]))
@@ -551,7 +562,11 @@ def _carboxyl_hydroxyl_idx(mol, carbonyl_idx):
         and bond.GetOtherAtom(carbonyl).GetAtomicNum() == 8
         and bond.GetOtherAtom(carbonyl).GetDegree() == 1
     ]
-    return hydroxyls[0] if len(hydroxyls) == 1 and _has_double_bonded_oxygen(carbonyl) else None
+    return (
+        hydroxyls[0]
+        if len(hydroxyls) == 1 and _has_double_bonded_oxygen(carbonyl)
+        else None
+    )
 
 
 def _residue_backbone(mol):
@@ -583,12 +598,24 @@ def _reactive_site_indices(mol):
             continue
         if _carboxyl_hydroxyl_idx(mol, atom.GetIdx()) is not None:
             sites["cterm"].append(atom.GetIdx())
-        if atom.GetAtomicNum() == 16 and atom.GetDegree() == 1 and atom.GetTotalNumHs() > 0:
+        if (
+            atom.GetAtomicNum() == 16
+            and atom.GetDegree() == 1
+            and atom.GetTotalNumHs() > 0
+        ):
             sites["disulphide"].append(atom.GetIdx())
-        if atom.GetAtomicNum() == 8 and atom.GetDegree() == 1 and atom.GetTotalNumHs() > 0:
+        if (
+            atom.GetAtomicNum() == 8
+            and atom.GetDegree() == 1
+            and atom.GetTotalNumHs() > 0
+        ):
             if _carboxyl_hydroxyl_idx(mol, atom.GetNeighbors()[0].GetIdx()) is None:
                 sites["ester"].append(atom.GetIdx())
-        if atom.GetAtomicNum() == 7 and not atom.GetIsAromatic() and atom.GetTotalNumHs() > 0:
+        if (
+            atom.GetAtomicNum() == 7
+            and not atom.GetIsAromatic()
+            and atom.GetTotalNumHs() > 0
+        ):
             if not any(
                 _carboxyl_hydroxyl_idx(mol, neighbor.GetIdx()) is not None
                 for neighbor in atom.GetNeighbors()
@@ -614,12 +641,12 @@ def _annotate_registry_site(residue, residue_idx, kind):
 def _marked_site_idx(mol, residue_idx, kind):
     marker = 1000 + residue_idx
     matches = [
-        atom.GetIdx()
-        for atom in mol.GetAtoms()
-        if atom.GetAtomMapNum() == marker
+        atom.GetIdx() for atom in mol.GetAtoms() if atom.GetAtomMapNum() == marker
     ]
     if len(matches) != 1:
-        raise SmilesError(f"Could not retain selected {kind} site for residue {residue_idx}")
+        raise SmilesError(
+            f"Could not retain selected {kind} site for residue {residue_idx}"
+        )
     return matches[0]
 
 
@@ -658,7 +685,9 @@ def _connect_registry_constraint(mol, marked_sites, pattern):
         return _connect_acid_to_atom(mol, site_idx, _find_n_terminal_amine(mol))
 
     acid_site = next((site for site in marked_sites if site[1] == "cterm"), None)
-    donor_site = next((site for site in marked_sites if site[1] in {"nterm", "ester"}), None)
+    donor_site = next(
+        (site for site in marked_sites if site[1] in {"nterm", "ester"}), None
+    )
     if acid_site is None or donor_site is None:
         raise BondSpecError(f"{pattern} does not specify a compatible sidechain pair")
     return _connect_acid_to_atom(
@@ -674,11 +703,17 @@ def _registry_constrained_peptide_smiles(peptideseq, pattern, registry):
         return peptideseq, "", linear_peptide_smiles(peptideseq, registry=registry)
     if pattern == "HT":
         mol = _build_peptide_mol(registry.resolve(token).smiles for token in tokens)
-        return peptideseq, pattern, Chem.MolToSmiles(_cyclize_head_to_tail(mol), isomericSmiles=True)
+        return (
+            peptideseq,
+            pattern,
+            Chem.MolToSmiles(_cyclize_head_to_tail(mol), isomericSmiles=True),
+        )
 
     kind_for_code = {"C": "disulphide", "Z": "cterm", "N": "nterm", "E": "ester"}
     if pattern[:2] not in {"SS", "SC"} or len(pattern[2:]) != len(tokens):
-        raise BondSpecError(f"{pattern} is not a valid constraint pattern for this sequence")
+        raise BondSpecError(
+            f"{pattern} is not a valid constraint pattern for this sequence"
+        )
     marked_sites = [
         (index, kind_for_code[code])
         for index, code in enumerate(pattern[2:])
@@ -690,14 +725,21 @@ def _registry_constrained_peptide_smiles(peptideseq, pattern, registry):
     valid_shapes = (
         (pattern.startswith("SS") and kinds == ["disulphide", "disulphide"])
         or (pattern.startswith("SC") and kinds in (["cterm"], ["nterm"], ["ester"]))
-        or (pattern.startswith("SC") and len(kinds) == 2 and "cterm" in kinds and any(kind in {"nterm", "ester"} for kind in kinds))
+        or (
+            pattern.startswith("SC")
+            and len(kinds) == 2
+            and "cterm" in kinds
+            and any(kind in {"nterm", "ester"} for kind in kinds)
+        )
     )
     if not valid_shapes:
         raise BondSpecError(f"{pattern} does not select the required reactive sites")
 
     fragments = []
     for index, token in enumerate(tokens):
-        selected = next((kind for site_index, kind in marked_sites if site_index == index), None)
+        selected = next(
+            (kind for site_index, kind in marked_sites if site_index == index), None
+        )
         residue = registry.resolve(token)
         fragment = (
             _annotate_registry_site(residue, index, selected)
@@ -718,7 +760,9 @@ def _registry_constrained_peptide_smiles(peptideseq, pattern, registry):
 def _connect_two_dummies(mol, bond_type=Chem.BondType.SINGLE):
     dummy_idxs = _dummy_indices(mol)
     if len(dummy_idxs) != 2:
-        raise SmilesError("Expected exactly two constraint placeholders for cyclization")
+        raise SmilesError(
+            "Expected exactly two constraint placeholders for cyclization"
+        )
 
     left = _dummy_details(mol, dummy_idxs[0])
     right = _dummy_details(mol, dummy_idxs[1])
@@ -761,7 +805,9 @@ def _connect_dummy_to_atom(mol, atom_idx, bond_type=Chem.BondType.SINGLE):
 def _connect_dummy_to_c_terminus(mol, bond_type=Chem.BondType.SINGLE):
     dummy_idxs = _dummy_indices(mol)
     if len(dummy_idxs) != 1:
-        raise SmilesError("Expected exactly one constraint placeholder for C-terminal cyclization")
+        raise SmilesError(
+            "Expected exactly one constraint placeholder for C-terminal cyclization"
+        )
 
     details = _dummy_details(mol, dummy_idxs[0])
     if details["kind"] != "terminal":
@@ -862,7 +908,9 @@ def constrained_peptide_smiles(peptideseq, pattern, next_bond_id=None, registry=
             raise BondSpecError(f"{code} in pattern {pattern} not recognised")
         constraint = valid_codes[code]
         fragment_smiles.append(
-            return_constrained_smiles(resi, constraint) if constraint else return_smiles(resi)
+            return_constrained_smiles(resi, constraint)
+            if constraint
+            else return_smiles(resi)
         )
 
     mol = _build_peptide_mol(fragment_smiles)

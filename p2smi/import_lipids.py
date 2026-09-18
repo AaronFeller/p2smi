@@ -13,7 +13,9 @@ FREE_ACID_PATTERN = Chem.MolFromSmarts("[CX3:1](=[OX1])[OX2H1:2]")
 
 def fatty_acid_to_acyl_fragment(mol):
     if len(Chem.GetMolFrags(mol)) != 1:
-        raise ModificationError("Lipid structure must contain exactly one connected component")
+        raise ModificationError(
+            "Lipid structure must contain exactly one connected component"
+        )
     matches = mol.GetSubstructMatches(FREE_ACID_PATTERN)
     if len(matches) == 1:
         selected_match = matches[0]
@@ -86,15 +88,25 @@ def import_lipid_modifiers(
     max_carbons=20,
     acid_mode="both",
 ):
-    if not isinstance(max_carbons, int) or isinstance(max_carbons, bool) or max_carbons < 1:
+    if (
+        not isinstance(max_carbons, int)
+        or isinstance(max_carbons, bool)
+        or max_carbons < 1
+    ):
         raise ModificationError("max_carbons must be a positive integer")
     if acid_mode not in {"both", "monoacid", "diacid"}:
         raise ModificationError("acid_mode must be 'both', 'monoacid', or 'diacid'")
     input_file = Path(input_file)
     output_file = Path(output_file)
-    existing = ModifierRegistry.read_json(output_file) if output_file.exists() else ModifierRegistry()
+    existing = (
+        ModifierRegistry.read_json(output_file)
+        if output_file.exists()
+        else ModifierRegistry()
+    )
     imported = []
-    for identifier, name, mol in _load_lipid_records(input_file, id_property, name_property):
+    for identifier, name, mol in _load_lipid_records(
+        input_file, id_property, name_property
+    ):
         try:
             carbon_count = sum(atom.GetAtomicNum() == 6 for atom in mol.GetAtoms())
             if carbon_count > max_carbons:

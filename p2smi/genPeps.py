@@ -100,8 +100,12 @@ def parse_constraints_option(option):
     if normalized.lower() == "all":
         return CONSTRAINTS.copy()
 
-    constraints = [item.strip().upper() for item in normalized.split(",") if item.strip()]
-    invalid = [constraint for constraint in constraints if constraint not in CONSTRAINTS]
+    constraints = [
+        item.strip().upper() for item in normalized.split(",") if item.strip()
+    ]
+    invalid = [
+        constraint for constraint in constraints if constraint not in CONSTRAINTS
+    ]
     if invalid:
         raise ValueError(f"Unsupported cyclization constraints: {', '.join(invalid)}")
     return constraints
@@ -149,7 +153,9 @@ def generate_sequences(
         noncanonical_percent,
         dextro_percent,
     )
-    invalid = [constraint for constraint in constraints if constraint not in CONSTRAINTS]
+    invalid = [
+        constraint for constraint in constraints if constraint not in CONSTRAINTS
+    ]
     if invalid:
         raise ValueError(f"Unsupported cyclization constraints: {', '.join(invalid)}")
 

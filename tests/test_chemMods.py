@@ -10,7 +10,11 @@ from p2smi.chemMods import (
     process_recipe_sequences,
     process_sequences,
 )
-from p2smi.modifiers import ModificationError, ModifierRegistry, builtin_modifier_registry
+from p2smi.modifiers import (
+    ModificationError,
+    ModifierRegistry,
+    builtin_modifier_registry,
+)
 
 
 def test_is_valid_smiles():
@@ -95,7 +99,9 @@ def test_process_recipe_sequences_applies_recipe_and_can_skip_errors(tmp_path):
         '"modifiers":[],"recipes":[{"id":"cap","steps":['
         '{"modifier":"n_acetyl","site":{"terminus":"N"}}]}]}'
     )
-    registry = ModifierRegistry.read_json(registry_file, base=builtin_modifier_registry())
+    registry = ModifierRegistry.read_json(
+        registry_file, base=builtin_modifier_registry()
+    )
 
     output = list(process_recipe_sequences(["pep: NCC(=O)O"], "cap", registry))
     assert output[0].startswith("pep[n_acetyl]: ")

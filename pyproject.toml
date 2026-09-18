@@ -34,3 +34,7 @@ dev = ["pytest",
 
 [tool.setuptools.packages.find]
 include = ["p2smi*"]
+
+[tool.black]
+target-version = ["py39"]
+line-length = 88

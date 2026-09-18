@@ -158,7 +158,10 @@ def parse_args(argv=None):
     ap.add_argument(
         "--include_id",
         action="store_true",
-        help="Preserve labels from 'id: SMILES' batch input as an ID field in the JSON output.",
+        help=(
+            "Preserve labels from 'id: SMILES' batch input as an ID field "
+            "in the JSON output."
+        ),
     )
     ap.add_argument(
         "--strict",

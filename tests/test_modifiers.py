@@ -75,7 +75,10 @@ def test_lipidation_builds_defined_lysine_amides(modifier_id, minimum_carbons):
     product = _apply(modifier_id, LYSINE, {"role": "sidechain_amine"})
 
     assert _smiles(product)
-    assert sum(atom.GetAtomicNum() == 6 for atom in product.GetAtoms()) >= minimum_carbons + 6
+    assert (
+        sum(atom.GetAtomicNum() == 6 for atom in product.GetAtoms())
+        >= minimum_carbons + 6
+    )
     assert product.HasSubstructMatch(Chem.MolFromSmarts("N-C(=O)-C"))
 
 
@@ -178,7 +181,9 @@ def test_selectors_fail_closed_on_ambiguity_and_support_explicit_escape_hatches(
     with pytest.raises(ModificationError, match="2 atoms"):
         resolve_site(dilysine, SiteSelector(role="sidechain_amine"))
 
-    amines = sorted(match[0] for match in dilysine.GetSubstructMatches(Chem.MolFromSmarts("[N;H2]")))
+    amines = sorted(
+        match[0] for match in dilysine.GetSubstructMatches(Chem.MolFromSmarts("[N;H2]"))
+    )
     index, role = resolve_site(dilysine, SiteSelector(atom_index=amines[-1]))
     assert index == amines[-1]
     assert role == "atom_index"
@@ -268,7 +273,9 @@ def test_custom_modifier_registry_round_trip_and_validation(tmp_path):
     }
     registry_file = tmp_path / "modifiers.json"
     registry_file.write_text(json.dumps(document))
-    registry = builtin_modifier_registry().merge(ModifierRegistry.read_json(registry_file))
+    registry = builtin_modifier_registry().merge(
+        ModifierRegistry.read_json(registry_file)
+    )
 
     product, applied = apply_recipe(LYSINE, registry.recipes["fluoro_lys"], registry)
     assert applied == ["fluoroacetyl"]
@@ -420,8 +427,12 @@ def test_modifications_preserve_stereochemistry_and_expected_formula_delta():
 
     source_chiral = Chem.FindMolChiralCenters(source, includeUnassigned=True)
     product_chiral = Chem.FindMolChiralCenters(product, includeUnassigned=True)
-    assert [label for _, label in source_chiral] == [label for _, label in product_chiral]
-    assert rdMolDescriptors.CalcMolFormula(source) != rdMolDescriptors.CalcMolFormula(product)
+    assert [label for _, label in source_chiral] == [
+        label for _, label in product_chiral
+    ]
+    assert rdMolDescriptors.CalcMolFormula(source) != rdMolDescriptors.CalcMolFormula(
+        product
+    )
 
 
 def test_sequence_recipe_targets_one_residue_before_peptide_assembly():
@@ -479,7 +490,9 @@ def test_sequence_recipe_supports_residue_scoped_smarts_match_selection():
         "DIOL,ALA", "", residues, modifiers, recipe
     )
 
-    assert Chem.MolFromSmiles(product).HasSubstructMatch(Chem.MolFromSmarts("OP(=O)(O)O"))
+    assert Chem.MolFromSmiles(product).HasSubstructMatch(
+        Chem.MolFromSmarts("OP(=O)(O)O")
+    )
     assert applied == ["phosphoryl@1"]
 
 
@@ -532,6 +545,4 @@ def test_sequence_recipe_rejects_residue_step_after_global_step():
     )
 
     with pytest.raises(ModificationError, match="must precede"):
-        build_modified_peptide(
-            "ALA", "", residues, builtin_modifier_registry(), recipe
-        )
+        build_modified_peptide("ALA", "", residues, builtin_modifier_registry(), recipe)
