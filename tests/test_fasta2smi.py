@@ -136,7 +136,7 @@ def test_generate_smiles_strings_uses_custom_registry_for_constrained_sequence(
     fasta_file.write_text(">custom|SCCT\nLAB_LYS,A,A,A\n")
     output_file = tmp_path / "custom.p2smi"
 
-    generate_smiles_strings(fasta_file, output_file, registry_file=registry_file)
+    generate_smiles_strings(fasta_file, output_file, registry_file=str(registry_file))
 
     output_smiles = output_file.read_text().strip().split(": ", 1)[1]
     assert Chem.MolFromSmiles(output_smiles) is not None
@@ -159,7 +159,7 @@ def test_generate_smiles_strings_applies_explicit_residue_recipe(tmp_path):
     generate_smiles_strings(
         fasta_file,
         output_file,
-        modifier_registry_file=modifier_file,
+        modifier_registry_file=str(modifier_file),
         recipe_id="designed",
     )
 

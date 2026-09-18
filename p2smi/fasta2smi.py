@@ -9,6 +9,8 @@ Uses p2smi.utilities.smilesgen.
 """
 
 import argparse
+from pathlib import Path
+
 import p2smi.utilities.smilesgen as smilesgen
 from p2smi.modifiers import (
     ModificationError,
@@ -248,7 +250,7 @@ def generate_smiles_strings(
     registry = None
     if registry_file is not None:
         registry = ResidueRegistry.from_legacy_mapping(all_aminos).merge(
-            ResidueRegistry.read_json(registry_file)
+            ResidueRegistry.read_json(Path(registry_file))
         )
     resolved_sequences = list(process_constraints(input_fasta, registry=registry))
     valid_sequences = []
@@ -267,7 +269,7 @@ def generate_smiles_strings(
         modifier_registry = builtin_modifier_registry()
         if modifier_registry_file:
             modifier_registry = ModifierRegistry.read_json(
-                modifier_registry_file, base=modifier_registry
+                Path(modifier_registry_file), base=modifier_registry
             )
         try:
             recipe = modifier_registry.recipes[recipe_id]

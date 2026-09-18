@@ -22,6 +22,7 @@ If you use this tool, please cite our paper at the link below:
 - Compute molecular properties (MW, logP, TPSA, Lipinski, etc.)
 
 ## Updates
+- Version 2.0.1 - Fixed CLI loading of residue and modifier registry paths
 - Version 2.0.0 - Added JSON residue registries, NCAA import from SMILES or MOL
   files, SMARTS/graph peptide assembly, and registry-aware FASTA conversion
 - Version 1.1.1 - Added functionality to allow for user-defined cyclizing residue constraints
