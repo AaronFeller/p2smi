@@ -27,7 +27,7 @@ synthesis-check = "p2smi.synthRules:main"
 
 [project.optional-dependencies]
 dev = ["pytest",
-        "black",
+        "black==25.9.0",
         "flake8",
         "pytest-cov",
         "pre-commit"]
