@@ -20,6 +20,7 @@ Uses RDKit for chemical property calculations.
 """
 
 import re
+from dataclasses import dataclass
 from rdkit import Chem
 from rdkit.Chem import Crippen
 import argparse
@@ -34,6 +35,15 @@ forbidden_motifs = {
 
 # List of charged residues
 charged = ["H", "R", "K", "E", "D"]
+
+
+@dataclass(frozen=True)
+class SynthesisConfig:
+    max_cysteines: int = 2
+    max_glycine_run: int = 4
+    max_length: int = 50
+    charge_window: int = 5
+    max_logp: float = 0.0
 
 
 class SmilesError(Exception):
@@ -71,10 +81,13 @@ def check_terminal_residues(seq):
     )
 
 
-def check_glycine_runs(seq):
-    # Check for runs of more than 4 glycines
+def check_glycine_runs(seq, max_run=4):
+    # Check for runs of more than the allowed number of glycines
+    pattern = rf"G{{{max_run + 1},}}"
     return (
-        "More than 4 consecutive glycines found" if re.search(r"G{4,}", seq) else None
+        f"More than {max_run} consecutive glycines found"
+        if re.search(pattern, seq)
+        else None
     )
 
 
@@ -83,20 +96,24 @@ def check_length(seq, max_length=50):
     return f"Peptide too long (length: {len(seq)})" if len(seq) > max_length else None
 
 
-def check_charge(seq):
-    # Check that there is at least one charged residue every 5 residues
+def check_charge(seq, window=5, charged_residues=None):
+    # Check that there is at least one charged residue in every window-sized stretch
+    charged_residues = charged if charged_residues is None else charged_residues
+    if window < 1:
+        raise ValueError("Charge window must be at least 1 residue")
     count = 0
     for resi in seq:
         count += 1
-        if resi in charged:
+        if resi in charged_residues:
             count = 0
-        if count >= 5:
+        if count >= window:
             return False
     return True
 
 
-def collect_synthesis_issues(seq):
+def collect_synthesis_issues(seq, config=None):
     # Aggregate all synthesis issues for a given sequence and SMILES
+    config = SynthesisConfig() if config is None else config
     issues = check_forbidden_motifs(seq)
     # generate smiles from sequence
     try:
@@ -104,59 +121,63 @@ def collect_synthesis_issues(seq):
         smiles = Chem.MolToSmiles(Chem.MolFromSequence(seq))
         # Check hydrophobicity
         logp_val = log_partition_coefficient(smiles)
-        if logp_val > 0:
-            issues.append(f"Failed hydrophobicity: logP {logp_val:.2f}")
+        if logp_val > config.max_logp:
+            issues.append(
+                f"Failed hydrophobicity: logP {logp_val:.2f} > {config.max_logp:.2f}"
+            )
     except Exception:
         issues.append("Failed to generate SMILES, logP not checked.")
-        smiles = None
 
     # Check charge distribution
-    if not check_charge(seq):
-        issues.append("Failed charge: need 1 charged residue every 5 residues")
+    if not check_charge(seq, window=config.charge_window):
+        issues.append(
+            f"Failed charge: need 1 charged residue every {config.charge_window} residues"
+        )
 
     # Run additional structural checks
-    for check_fn in [
-        check_cysteine_content,
-        check_terminal_residues,
-        check_glycine_runs,
-        check_length,
+    for result in [
+        check_cysteine_content(seq, max_c=config.max_cysteines),
+        check_terminal_residues(seq),
+        check_glycine_runs(seq, max_run=config.max_glycine_run),
+        check_length(seq, max_length=config.max_length),
     ]:
-        result = check_fn(seq)
         if result:
             issues.append(result)
     return issues
 
 
-def evaluate_line(line):
+def evaluate_line(line, config=None):
     # Parse a single line (format: sequence-cyclization: smiles),
     # run all synthesis checks, and return issues or True if passed
+    seq = line.strip()
     try:
         # pass if line contains '>'
         if ">" in line:
             return line, None
 
         # check if sequence has only natural amino acids
-        if not re.fullmatch(r"[ACDEFGHIKLMNPQRSTVWY]+", line.strip()):
+        if not re.fullmatch(r"[ACDEFGHIKLMNPQRSTVWY]+", seq):
             raise ValueError("Line contains unnatural amino acids")
 
-        issues = collect_synthesis_issues(line)
-        return (line, True if not issues else issues)
+        issues = collect_synthesis_issues(seq, config=config)
+        return (seq, True if not issues else issues)
 
     except Exception as e:
         # Return parsing error if line format is invalid
-        return (line, [f"Parsing error: {e}"])
+        return (seq or line, [f"Parsing error: {e}"])
 
 
-def evaluate_file(input_file, output_file=None):
+def evaluate_file(input_file, output_file=None, config=None):
     # Evaluate all sequences; optionally write pass/fail results to a file
     results = []
     with open(input_file, "r") as f:
         for line in f:
-            result = evaluate_line(line)
+            result = evaluate_line(line, config=config)
             results.append(result)
 
     # Write results to output file if provided
     if output_file is not None:
+        header = ""
         with open(output_file, "w") as out:
             for line, result in results:
                 if result is None:
@@ -171,6 +192,7 @@ def evaluate_file(input_file, output_file=None):
 
     # Print results to console
     else:
+        header = ""
         for line, result in results:
             if result is None:
                 header = line.strip()
@@ -182,9 +204,8 @@ def evaluate_file(input_file, output_file=None):
         return results
 
 
-def main():
+def parse_args(argv=None):
 
-    # CLI setup to specify input and output files
     parser = argparse.ArgumentParser(
         description="Evaluate peptide synthesis feasibility from file."
     )
@@ -192,7 +213,7 @@ def main():
         "-i",
         "--input_file",
         required=True,
-        help="Input file with peptide-smiles lines",
+        help="Input FASTA file with natural peptide sequences.",
     )
     parser.add_argument(
         "-o",
@@ -201,10 +222,64 @@ def main():
         default=None,
         help="Optional output file to write results, otherwise output to terminal",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--max_cysteines",
+        type=int,
+        default=2,
+        help="Maximum allowed cysteines before the sequence is flagged.",
+    )
+    parser.add_argument(
+        "--max_glycine_run",
+        type=int,
+        default=4,
+        help="Maximum allowed consecutive glycines before the sequence is flagged.",
+    )
+    parser.add_argument(
+        "--max_length",
+        type=int,
+        default=50,
+        help="Maximum allowed peptide length.",
+    )
+    parser.add_argument(
+        "--charge_window",
+        type=int,
+        default=5,
+        help="Require at least one charged residue in every N-residue window.",
+    )
+    parser.add_argument(
+        "--max_logp",
+        type=float,
+        default=0.0,
+        help="Maximum allowed logP before the sequence is flagged as too hydrophobic.",
+    )
+    return parser.parse_args(argv)
+
+
+def build_config(args):
+    return SynthesisConfig(
+        max_cysteines=args.max_cysteines,
+        max_glycine_run=args.max_glycine_run,
+        max_length=args.max_length,
+        charge_window=args.charge_window,
+        max_logp=args.max_logp,
+    )
+
+
+def main(argv=None):
+
+    # CLI setup to specify input and output files
+    parser = argparse.ArgumentParser(
+        description="Evaluate peptide synthesis feasibility from file."
+    )
+    args = parse_args(argv)
+
+    if args.max_cysteines < 0 or args.max_glycine_run < 0 or args.max_length < 0:
+        parser.error("Threshold values must be non-negative")
+    if args.charge_window < 1:
+        parser.error("charge_window must be at least 1")
 
     # Run evaluation on the given file
-    evaluate_file(args.input_file, args.output_file)
+    evaluate_file(args.input_file, args.output_file, config=build_config(args))
 
 
 if __name__ == "__main__":

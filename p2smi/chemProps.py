@@ -10,6 +10,7 @@ Improvements:
 """
 
 import argparse
+from functools import partial
 import json
 from typing import Tuple, Optional
 
@@ -106,30 +107,38 @@ def molecule_summary(smiles: str) -> dict:
 # ---------- Batch processing ----------
 
 
-def parse_smiles_line(line: str) -> Optional[str]:
+def parse_smiles_line(line: str) -> Optional[Tuple[Optional[str], str]]:
     s = line.strip()
     if not s:
         return None
     # support lines like "id: SMILES" or just "SMILES"
-    return s.split(": ", 1)[-1] if ": " in s else s
+    if ": " in s:
+        label, smiles = s.split(": ", 1)
+        return label.strip(), smiles.strip()
+    return None, s
 
 
-def process_line(line: str) -> str:
-    s = parse_smiles_line(line)
-    if s is None:
+def process_line(line: str, include_id: bool = False, strict: bool = False) -> str:
+    parsed = parse_smiles_line(line)
+    if parsed is None:
         return ""  # skip empties
+    label, smiles = parsed
     try:
-        mol = make_mol(s)
-        res = molecule_summary_from_mol(s, mol)
+        mol = make_mol(smiles)
+        res = molecule_summary_from_mol(smiles, mol)
+        if include_id and label:
+            res["ID"] = label
         return json.dumps(res)
     except SmilesError as e:
-        return json.dumps({"error": f"{e}", "SMILES": s})
+        if strict:
+            raise
+        error = {"error": f"{e}", "SMILES": smiles}
+        if include_id and label:
+            error["ID"] = label
+        return json.dumps(error)
 
 
-# ---------- CLI ----------
-
-
-def main():
+def parse_args(argv=None):
     ap = argparse.ArgumentParser(
         description="Analyze SMILES strings for molecular properties."
     )
@@ -146,58 +155,85 @@ def main():
         default=0,
         help="Use N processes for batch mode (0=disable).",
     )
-    args = ap.parse_args()
+    ap.add_argument(
+        "--include_id",
+        action="store_true",
+        help="Preserve labels from 'id: SMILES' batch input as an ID field in the JSON output.",
+    )
+    ap.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit on the first invalid SMILES instead of emitting JSON error records.",
+    )
+    ap.add_argument(
+        "--indent",
+        type=int,
+        default=2,
+        help="Indentation level for single-SMILES JSON output.",
+    )
+    return ap.parse_args(argv)
+
+
+def _write_stream(inf, output_file=None, procs=0, include_id=False, strict=False):
+    worker = partial(process_line, include_id=include_id, strict=strict)
+
+    if procs and procs > 1:
+        from multiprocessing import Pool
+
+        with Pool(processes=procs) as pool:
+            iterator = pool.imap_unordered(worker, inf, chunksize=1024)
+            if output_file:
+                with open(output_file, "w", encoding="utf-8") as outf:
+                    for out in iterator:
+                        if out:
+                            outf.write(out + "\n")
+            else:
+                for out in iterator:
+                    if out:
+                        print(out)
+        return
+
+    if output_file:
+        with open(output_file, "w", encoding="utf-8") as outf:
+            for line in inf:
+                out = worker(line)
+                if out:
+                    outf.write(out + "\n")
+    else:
+        for line in inf:
+            out = worker(line)
+            if out:
+                print(out)
+
+
+# ---------- CLI ----------
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(
+        description="Analyze SMILES strings for molecular properties."
+    )
+    args = parse_args(argv)
 
     if not args.smiles and not args.input_file:
         ap.error("At least one of --smiles or --input_file must be provided.")
 
-    # Single SMILES path
-    if args.smiles:
-        res = molecule_summary(args.smiles)
-        print(json.dumps(res, indent=2))
-        return
+    try:
+        if args.smiles:
+            res = molecule_summary(args.smiles)
+            print(json.dumps(res, indent=args.indent))
+            return
 
-    # Batch path
-    if args.input_file:
-        if args.procs and args.procs > 1:
-            # Multiprocessing for large files
-            from multiprocessing import Pool
-
-            with open(args.input_file, "r") as inf:
-                if args.output_file:
-                    with (
-                        open(args.output_file, "w") as outf,
-                        Pool(processes=args.procs) as pool,
-                    ):
-                        for out in pool.imap_unordered(
-                            process_line, inf, chunksize=1024
-                        ):
-                            if out:
-                                outf.write(out + "\n")
-                else:
-                    with Pool(processes=args.procs) as pool:
-                        for out in pool.imap_unordered(
-                            process_line, inf, chunksize=1024
-                        ):
-                            if out:
-                                print(out)
-        else:
-            # Single-process fast stream
-            if args.output_file:
-                with (
-                    open(args.input_file, "r") as inf,
-                    open(args.output_file, "w") as outf,
-                ):
-                    for line in inf:
-                        out = process_line(line)
-                        if out:
-                            outf.write(out + "\n")
-            else:
-                with open(args.input_file, "r") as inf:
-                    for line in inf:
-                        out = process_line(line)
-                        if out:
-                            print(out)
+        with open(args.input_file, "r", encoding="utf-8") as inf:
+            _write_stream(
+                inf,
+                output_file=args.output_file,
+                procs=args.procs,
+                include_id=args.include_id,
+                strict=args.strict,
+            )
+    except SmilesError as exc:
+        ap.exit(1, f"{exc}\n")
 
 
 if __name__ == "__main__":

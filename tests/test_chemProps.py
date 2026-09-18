@@ -1,10 +1,15 @@
+import json
+
 import pytest
 
 from p2smi.chemProps import (
     SmilesError,
     lipinski_trial_mol,
+    main,
     molecule_summary,
     make_mol,
+    parse_smiles_line,
+    process_line,
 )
 
 
@@ -73,3 +78,30 @@ def test_molecule_summary_keys():
 def test_molecule_summary_invalid_smiles():
     with pytest.raises(SmilesError):
         molecule_summary("INVALID_SMILES")
+
+
+def test_parse_smiles_line_preserves_optional_id():
+    assert parse_smiles_line("mol1: CCO") == ("mol1", "CCO")
+    assert parse_smiles_line("CCO") == (None, "CCO")
+
+
+def test_process_line_can_include_ids_in_json():
+    payload = json.loads(process_line("mol1: CCO", include_id=True))
+    assert payload["ID"] == "mol1"
+    assert payload["SMILES"] == "CCO"
+
+
+def test_process_line_strict_raises_for_invalid_smiles():
+    with pytest.raises(SmilesError):
+        process_line("mol1: INVALID_SMILES", strict=True)
+
+
+def test_main_batch_include_id_writes_jsonl(tmp_path):
+    input_file = tmp_path / "mols.txt"
+    output_file = tmp_path / "props.jsonl"
+    input_file.write_text("mol1: CCO\nmol2: CCN\n")
+
+    main(["-i", str(input_file), "-o", str(output_file), "--include_id"])
+
+    rows = [json.loads(line) for line in output_file.read_text().splitlines()]
+    assert [row["ID"] for row in rows] == ["mol1", "mol2"]

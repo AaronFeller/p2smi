@@ -10,6 +10,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 
 # Import amino acid definitions
+from p2smi.registry import ResidueRegistry, parse_sequence_tokens
 from p2smi.utilities.aminoacids import all_aminos
 
 from functools import lru_cache
@@ -51,6 +52,11 @@ class UndefinedPropertyError(CustomError):
 
 class SmilesError(CustomError):
     pass
+
+
+PEPTIDE_BOND_REACTION = AllChem.ReactionFromSmarts(
+    "[N:5][C:4][C:1](=[O:2])[OH:3].[N;H1,H2:6][C:7][C:8](=[O:9])[OH:10]>>[N:5][C:4][C:1](=[O:2])[N:6][C:7][C:8](=[O:9])[OH:10]"
+)
 
 
 def add_amino(name):
@@ -189,12 +195,27 @@ def _preserve_seq_type(orig, letters_list):
 # -------------------------------------------------------------------
 
 
-def can_ssbond(peptideseq):
+def _registry_sequence_sites(peptideseq, registry):
+    tokens = parse_sequence_tokens(peptideseq, registry)
+    sites = []
+    for token in tokens:
+        residue = registry.resolve(token)
+        mol = _mol_from_smiles(residue.smiles, context=f"residue {residue.id}")
+        candidates = _reactive_site_indices(mol)
+        sites.append({kind for kind, indices in candidates.items() if len(indices) == 1})
+    return tokens, sites
+
+
+def can_ssbond(peptideseq, registry=None):
     """Disulphide: need at least two Cys-like residues;
     pick the pair with max separation (>=3 apart)."""
-    letters = _normalize_seq_letters(peptideseq)
-    dis = _CONSTRAINT_LETTER_SETS["disulphide"]
-    locs = [i for i, r in enumerate(letters) if r in dis]
+    if registry is not None:
+        letters, sites = _registry_sequence_sites(peptideseq, registry)
+        locs = [i for i, kinds in enumerate(sites) if "disulphide" in kinds]
+    else:
+        letters = _normalize_seq_letters(peptideseq)
+        dis = _CONSTRAINT_LETTER_SETS["disulphide"]
+        locs = [i for i, r in enumerate(letters) if r in dis]
     if len(locs) < 2:
         return False
     (a, b), sep = max(
@@ -207,54 +228,72 @@ def can_ssbond(peptideseq):
     return _preserve_seq_type(peptideseq, letters), pattern
 
 
-def can_htbond(peptideseq):
+def can_htbond(peptideseq, registry=None):
     """Your original heuristic: qualifies if len >= 5 or exactly 2."""
-    letters = _normalize_seq_letters(peptideseq)
+    letters = (
+        parse_sequence_tokens(peptideseq, registry)
+        if registry is not None
+        else _normalize_seq_letters(peptideseq)
+    )
     if len(letters) >= 5 or len(letters) == 2:
         return _preserve_seq_type(peptideseq, letters), "HT"
     return False
 
 
-def can_scntbond(peptideseq, strict=False):
-    """Sidechain → C-terminal (via N-term constraint code 'Z' position)."""
-    letters = _normalize_seq_letters(peptideseq)
-    cterm = _CONSTRAINT_LETTER_SETS["cterm"]
-    locs = [i for i, r in enumerate(letters[3:], start=3) if r in cterm]
+def can_scntbond(peptideseq, strict=False, registry=None):
+    """Sidechain to N-terminus using a cterm-capable sidechain."""
+    if registry is not None:
+        letters, sites = _registry_sequence_sites(peptideseq, registry)
+        locs = [i for i, kinds in enumerate(sites[3:], start=3) if "cterm" in kinds]
+    else:
+        letters = _normalize_seq_letters(peptideseq)
+        cterm = _CONSTRAINT_LETTER_SETS["cterm"]
+        locs = [i for i, r in enumerate(letters[3:], start=3) if r in cterm]
     if not locs or (len(locs) > 1 and strict):
         return False
+
     idx = locs[-1]  # keep your previous "last occurrence" behavior
     pattern = ["SC"] + ["Z" if i == idx else "X" for i in range(len(letters))]
     return _preserve_seq_type(peptideseq, letters), "".join(pattern)
 
 
-def can_scctbond(peptideseq, strict=False):
-    """Sidechain ↔ C-term using N-term/ester site: encode 'N' or 'E' at the site."""
-    letters = _normalize_seq_letters(peptideseq)
-    esters = _CONSTRAINT_LETTER_SETS["ester"]
-    nterms = _CONSTRAINT_LETTER_SETS["nterm"]
-
-    locs = [(i, "N") for i, r in enumerate(letters[:-3]) if r in nterms]
-    locs += [(i, "E") for i, r in enumerate(letters[:-3]) if r in esters]
+def can_scctbond(peptideseq, strict=False, registry=None):
+    """Sidechain to C-terminus using an nterm or ester-capable sidechain."""
+    if registry is not None:
+        letters, sites = _registry_sequence_sites(peptideseq, registry)
+        locs = [(i, "N") for i, kinds in enumerate(sites[:-3]) if "nterm" in kinds]
+        locs += [(i, "E") for i, kinds in enumerate(sites[:-3]) if "ester" in kinds]
+    else:
+        letters = _normalize_seq_letters(peptideseq)
+        esters = _CONSTRAINT_LETTER_SETS["ester"]
+        nterms = _CONSTRAINT_LETTER_SETS["nterm"]
+        locs = [(i, "N") for i, r in enumerate(letters[:-3]) if r in nterms]
+        locs += [(i, "E") for i, r in enumerate(letters[:-3]) if r in esters]
     if not locs or (len(locs) > 1 and strict):
         return False
 
-    i0, code = locs[0]  # match previous behavior (first eligible)
-    pattern = ["SC"] + [code if i == i0 else "X" for i in range(len(letters))]
+    idx, code = locs[0]  # keep your previous "first eligible" behavior
+    pattern = ["SC"] + [code if i == idx else "X" for i in range(len(letters))]
     return _preserve_seq_type(peptideseq, letters), "".join(pattern)
 
 
-def can_scscbond(peptideseq, strict=False):
+def can_scscbond(peptideseq, strict=False, registry=None):
     """Sidechain-to-sidechain: choose (cterm_pos, partner_pos) with max separation >= 2.
     Encode 'Z' at cterm_pos and 'N'/'E' at partner_pos depending on site set.
     """
-    letters = _normalize_seq_letters(peptideseq)
-    nterms = _CONSTRAINT_LETTER_SETS["nterm"]
-    cterms = _CONSTRAINT_LETTER_SETS["cterm"]
-    esters = _CONSTRAINT_LETTER_SETS["ester"]
-
-    locs_n = [i for i, r in enumerate(letters) if r in nterms]
-    locs_c = [i for i, r in enumerate(letters) if r in cterms]
-    locs_e = [i for i, r in enumerate(letters) if r in esters]
+    if registry is not None:
+        letters, sites = _registry_sequence_sites(peptideseq, registry)
+        locs_n = [i for i, kinds in enumerate(sites) if "nterm" in kinds]
+        locs_c = [i for i, kinds in enumerate(sites) if "cterm" in kinds]
+        locs_e = [i for i, kinds in enumerate(sites) if "ester" in kinds]
+    else:
+        letters = _normalize_seq_letters(peptideseq)
+        nterms = _CONSTRAINT_LETTER_SETS["nterm"]
+        cterms = _CONSTRAINT_LETTER_SETS["cterm"]
+        esters = _CONSTRAINT_LETTER_SETS["ester"]
+        locs_n = [i for i, r in enumerate(letters) if r in nterms]
+        locs_c = [i for i, r in enumerate(letters) if r in cterms]
+        locs_e = [i for i, r in enumerate(letters) if r in esters]
 
     if not locs_c or not (locs_n or locs_e):
         return False
@@ -276,15 +315,15 @@ def can_scscbond(peptideseq, strict=False):
     return _preserve_seq_type(peptideseq, letters), pattern
 
 
-def what_constraints(peptideseq):
+def what_constraints(peptideseq, registry=None):
     return [
         res
         for res in (
-            can_ssbond(peptideseq),
-            can_htbond(peptideseq),
-            can_scctbond(peptideseq),
-            can_scntbond(peptideseq),
-            can_scscbond(peptideseq),
+            can_ssbond(peptideseq, registry=registry),
+            can_htbond(peptideseq, registry=registry),
+            can_scctbond(peptideseq, registry=registry),
+            can_scntbond(peptideseq, registry=registry),
+            can_scscbond(peptideseq, registry=registry),
         )
         if res
     ]
@@ -383,27 +422,401 @@ def return_constrained_smiles(resi, constraint):
             return aminodata[property_to_name("Code", resi)][constraint]
 
 
-def linear_peptide_smiles(peptideseq):
-    """
-    Build linear peptide SMILES by concatenating residue fragments.
-    Start with 'O', then for each residue:
-      (1) trim the last character of the current chain
-      (2) append the full residue SMILES fragment
-    Assumes each residue fragment in aminodata['SMILES'] ends with a connector
-    atom that replaces the trimmed char from the chain (e.g., ...O).
-    """
+def _mol_from_smiles(smiles, *, context):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise SmilesError(f"Could not parse {context} SMILES: {smiles}")
+    return mol
+
+
+def _run_peptide_bond_reaction(left_mol, right_mol):
+    products = PEPTIDE_BOND_REACTION.RunReactants((left_mol, right_mol))
+    if not products:
+        raise SmilesError("SMARTS peptide-bond reaction did not produce a product")
+
+    for product_set in products:
+        try:
+            product = Chem.Mol(product_set[0])
+            Chem.SanitizeMol(product)
+            return product
+        except Exception:
+            continue
+
+    raise SmilesError("SMARTS peptide-bond reaction produced only invalid products")
+
+
+def _has_double_bonded_oxygen(atom):
+    return any(
+        bond.GetBondType() == Chem.BondType.DOUBLE
+        and bond.GetOtherAtom(atom).GetAtomicNum() == 8
+        for bond in atom.GetBonds()
+    )
+
+
+def _find_terminal_carboxyl(mol):
+    matches = []
+    for atom in mol.GetAtoms():
+        if atom.GetAtomicNum() != 6:
+            continue
+
+        double_oxygens = []
+        hydroxyl_oxygens = []
+        carbon_neighbors = []
+        for bond in atom.GetBonds():
+            neighbor = bond.GetOtherAtom(atom)
+            if neighbor.GetAtomicNum() == 8:
+                if bond.GetBondType() == Chem.BondType.DOUBLE:
+                    double_oxygens.append(neighbor.GetIdx())
+                elif bond.GetBondType() == Chem.BondType.SINGLE and neighbor.GetDegree() == 1:
+                    hydroxyl_oxygens.append(neighbor.GetIdx())
+            elif neighbor.GetAtomicNum() == 6:
+                carbon_neighbors.append(neighbor)
+
+        if len(double_oxygens) != 1 or len(hydroxyl_oxygens) != 1:
+            continue
+
+        if any(
+            any(nn.GetAtomicNum() == 7 for nn in carbon.GetNeighbors() if nn.GetIdx() != atom.GetIdx())
+            for carbon in carbon_neighbors
+        ):
+            matches.append((atom.GetIdx(), hydroxyl_oxygens[0]))
+
+    if len(matches) != 1:
+        raise SmilesError("Could not uniquely identify the peptide C-terminus")
+    return matches[0]
+
+
+def _find_n_terminal_amine(mol):
+    matches = []
+    for atom in mol.GetAtoms():
+        if atom.GetAtomicNum() != 7:
+            continue
+
+        if any(
+            neighbor.GetAtomicNum() == 6 and _has_double_bonded_oxygen(neighbor)
+            for neighbor in atom.GetNeighbors()
+        ):
+            continue
+
+        for carbon in atom.GetNeighbors():
+            if carbon.GetAtomicNum() != 6:
+                continue
+            if any(
+                neighbor.GetAtomicNum() == 6 and _has_double_bonded_oxygen(neighbor)
+                for neighbor in carbon.GetNeighbors()
+                if neighbor.GetIdx() != atom.GetIdx()
+            ):
+                matches.append(atom.GetIdx())
+                break
+
+    if len(matches) != 1:
+        raise SmilesError("Could not uniquely identify the peptide N-terminus")
+    return matches[0]
+
+
+def _dummy_indices(mol):
+    return [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetAtomicNum() == 0]
+
+
+def _dummy_details(mol, dummy_idx):
+    atom = mol.GetAtomWithIdx(dummy_idx)
+    neighbors = []
+    oxygen_neighbor = None
+    for bond in atom.GetBonds():
+        neighbor = bond.GetOtherAtom(atom)
+        if bond.GetBondType() == Chem.BondType.DOUBLE and neighbor.GetAtomicNum() == 8:
+            oxygen_neighbor = neighbor.GetIdx()
+        else:
+            neighbors.append(neighbor.GetIdx())
+
+    if oxygen_neighbor is not None and len(neighbors) == 1:
+        return {"kind": "carbonyl", "atom": dummy_idx, "anchor": neighbors[0]}
+    if oxygen_neighbor is None and len(neighbors) == 1:
+        return {"kind": "terminal", "atom": dummy_idx, "anchor": neighbors[0]}
+    raise SmilesError("Constraint placeholder has an unsupported bonding pattern")
+
+
+def _finalize_mol(rw_mol):
+    mol = rw_mol.GetMol()
+    Chem.SanitizeMol(mol)
+    return mol
+
+
+def _carboxyl_hydroxyl_idx(mol, carbonyl_idx):
+    carbonyl = mol.GetAtomWithIdx(carbonyl_idx)
+    hydroxyls = [
+        bond.GetOtherAtom(carbonyl).GetIdx()
+        for bond in carbonyl.GetBonds()
+        if bond.GetBondType() == Chem.BondType.SINGLE
+        and bond.GetOtherAtom(carbonyl).GetAtomicNum() == 8
+        and bond.GetOtherAtom(carbonyl).GetDegree() == 1
+    ]
+    return hydroxyls[0] if len(hydroxyls) == 1 and _has_double_bonded_oxygen(carbonyl) else None
+
+
+def _residue_backbone(mol):
+    matches = []
+    for alpha in mol.GetAtoms():
+        if alpha.GetAtomicNum() != 6:
+            continue
+        amines = [atom for atom in alpha.GetNeighbors() if atom.GetAtomicNum() == 7]
+        acids = [
+            atom
+            for atom in alpha.GetNeighbors()
+            if _carboxyl_hydroxyl_idx(mol, atom.GetIdx()) is not None
+        ]
+        if len(amines) == len(acids) == 1:
+            matches.append((alpha, amines[0], acids[0]))
+    if len(matches) != 1:
+        raise SmilesError("Could not uniquely identify an alpha-amino-acid backbone")
+    return matches[0]
+
+
+def _reactive_site_indices(mol):
+    alpha, amine, carboxyl = _residue_backbone(mol)
+    excluded = {alpha.GetIdx(), amine.GetIdx(), carboxyl.GetIdx()}
+    excluded.update(atom.GetIdx() for atom in carboxyl.GetNeighbors())
+    sites = {"cterm": [], "nterm": [], "ester": [], "disulphide": []}
+
+    for atom in mol.GetAtoms():
+        if atom.GetIdx() in excluded:
+            continue
+        if _carboxyl_hydroxyl_idx(mol, atom.GetIdx()) is not None:
+            sites["cterm"].append(atom.GetIdx())
+        if atom.GetAtomicNum() == 16 and atom.GetDegree() == 1 and atom.GetTotalNumHs() > 0:
+            sites["disulphide"].append(atom.GetIdx())
+        if atom.GetAtomicNum() == 8 and atom.GetDegree() == 1 and atom.GetTotalNumHs() > 0:
+            if _carboxyl_hydroxyl_idx(mol, atom.GetNeighbors()[0].GetIdx()) is None:
+                sites["ester"].append(atom.GetIdx())
+        if atom.GetAtomicNum() == 7 and not atom.GetIsAromatic() and atom.GetTotalNumHs() > 0:
+            if not any(
+                _carboxyl_hydroxyl_idx(mol, neighbor.GetIdx()) is not None
+                for neighbor in atom.GetNeighbors()
+            ):
+                sites["nterm"].append(atom.GetIdx())
+    return sites
+
+
+def _annotate_registry_site(residue, residue_idx, kind):
+    mol = _mol_from_smiles(residue.smiles, context=f"residue {residue.id}")
+    for atom in mol.GetAtoms():
+        atom.SetAtomMapNum(0)
+    sites = _reactive_site_indices(mol)[kind]
+    if len(sites) != 1:
+        raise BondSpecError(
+            f"Residue {residue.id} has {len(sites)} unambiguous {kind} reaction sites; "
+            "selecting a site explicitly is not supported yet"
+        )
+    mol.GetAtomWithIdx(sites[0]).SetAtomMapNum(1000 + residue_idx)
+    return mol
+
+
+def _marked_site_idx(mol, residue_idx, kind):
+    marker = 1000 + residue_idx
+    matches = [
+        atom.GetIdx()
+        for atom in mol.GetAtoms()
+        if atom.GetAtomMapNum() == marker
+    ]
+    if len(matches) != 1:
+        raise SmilesError(f"Could not retain selected {kind} site for residue {residue_idx}")
+    return matches[0]
+
+
+def _connect_acid_to_atom(mol, acid_idx, atom_idx):
+    hydroxyl_idx = _carboxyl_hydroxyl_idx(mol, acid_idx)
+    if hydroxyl_idx is None:
+        raise SmilesError("Selected sidechain acid is not a free carboxylic acid")
+    rw_mol = Chem.RWMol(mol)
+    rw_mol.AddBond(acid_idx, atom_idx, Chem.BondType.SINGLE)
+    rw_mol.RemoveAtom(hydroxyl_idx)
+    return _finalize_mol(rw_mol)
+
+
+def _connect_atom_to_c_terminus(mol, atom_idx):
+    carbonyl_idx, hydroxyl_idx = _find_terminal_carboxyl(mol)
+    rw_mol = Chem.RWMol(mol)
+    rw_mol.AddBond(atom_idx, carbonyl_idx, Chem.BondType.SINGLE)
+    rw_mol.RemoveAtom(hydroxyl_idx)
+    return _finalize_mol(rw_mol)
+
+
+def _connect_registry_constraint(mol, marked_sites, pattern):
+    if pattern.startswith("SS"):
+        (_, left_kind), (_, right_kind) = marked_sites
+        left_idx = _marked_site_idx(mol, marked_sites[0][0], left_kind)
+        right_idx = _marked_site_idx(mol, marked_sites[1][0], right_kind)
+        rw_mol = Chem.RWMol(mol)
+        rw_mol.AddBond(left_idx, right_idx, Chem.BondType.SINGLE)
+        return _finalize_mol(rw_mol)
+
+    if len(marked_sites) == 1:
+        residue_idx, kind = marked_sites[0]
+        site_idx = _marked_site_idx(mol, residue_idx, kind)
+        if kind in {"nterm", "ester"}:
+            return _connect_atom_to_c_terminus(mol, site_idx)
+        return _connect_acid_to_atom(mol, site_idx, _find_n_terminal_amine(mol))
+
+    acid_site = next((site for site in marked_sites if site[1] == "cterm"), None)
+    donor_site = next((site for site in marked_sites if site[1] in {"nterm", "ester"}), None)
+    if acid_site is None or donor_site is None:
+        raise BondSpecError(f"{pattern} does not specify a compatible sidechain pair")
+    return _connect_acid_to_atom(
+        mol,
+        _marked_site_idx(mol, *acid_site),
+        _marked_site_idx(mol, *donor_site),
+    )
+
+
+def _registry_constrained_peptide_smiles(peptideseq, pattern, registry):
+    tokens = parse_sequence_tokens(peptideseq, registry)
+    if not pattern:
+        return peptideseq, "", linear_peptide_smiles(peptideseq, registry=registry)
+    if pattern == "HT":
+        mol = _build_peptide_mol(registry.resolve(token).smiles for token in tokens)
+        return peptideseq, pattern, Chem.MolToSmiles(_cyclize_head_to_tail(mol), isomericSmiles=True)
+
+    kind_for_code = {"C": "disulphide", "Z": "cterm", "N": "nterm", "E": "ester"}
+    if pattern[:2] not in {"SS", "SC"} or len(pattern[2:]) != len(tokens):
+        raise BondSpecError(f"{pattern} is not a valid constraint pattern for this sequence")
+    marked_sites = [
+        (index, kind_for_code[code])
+        for index, code in enumerate(pattern[2:])
+        if code in kind_for_code
+    ]
+    if any(code not in {*kind_for_code, "X"} for code in pattern[2:]):
+        raise BondSpecError(f"{pattern} contains an unknown constraint code")
+    kinds = [kind for _, kind in marked_sites]
+    valid_shapes = (
+        (pattern.startswith("SS") and kinds == ["disulphide", "disulphide"])
+        or (pattern.startswith("SC") and kinds in (["cterm"], ["nterm"], ["ester"]))
+        or (pattern.startswith("SC") and len(kinds) == 2 and "cterm" in kinds and any(kind in {"nterm", "ester"} for kind in kinds))
+    )
+    if not valid_shapes:
+        raise BondSpecError(f"{pattern} does not select the required reactive sites")
+
+    fragments = []
+    for index, token in enumerate(tokens):
+        selected = next((kind for site_index, kind in marked_sites if site_index == index), None)
+        residue = registry.resolve(token)
+        fragment = (
+            _annotate_registry_site(residue, index, selected)
+            if selected
+            else _mol_from_smiles(residue.smiles, context=f"residue {residue.id}")
+        )
+        if not selected:
+            for atom in fragment.GetAtoms():
+                atom.SetAtomMapNum(0)
+        fragments.append(fragment)
+    mol = _build_peptide_mol(fragments)
+    mol = _connect_registry_constraint(mol, marked_sites, pattern)
+    for atom in mol.GetAtoms():
+        atom.SetAtomMapNum(0)
+    return peptideseq, pattern, Chem.MolToSmiles(mol, isomericSmiles=True)
+
+
+def _connect_two_dummies(mol, bond_type=Chem.BondType.SINGLE):
+    dummy_idxs = _dummy_indices(mol)
+    if len(dummy_idxs) != 2:
+        raise SmilesError("Expected exactly two constraint placeholders for cyclization")
+
+    left = _dummy_details(mol, dummy_idxs[0])
+    right = _dummy_details(mol, dummy_idxs[1])
+
+    rw_mol = Chem.RWMol(mol)
+    if left["kind"] == "carbonyl" and right["kind"] == "carbonyl":
+        raise SmilesError("Cannot connect two carbonyl-center placeholders")
+
+    if left["kind"] == "terminal" and right["kind"] == "terminal":
+        rw_mol.AddBond(left["anchor"], right["anchor"], bond_type)
+        remove_idxs = dummy_idxs
+    else:
+        carbonyl = left if left["kind"] == "carbonyl" else right
+        terminal = right if left["kind"] == "carbonyl" else left
+        rw_mol.GetAtomWithIdx(carbonyl["atom"]).SetAtomicNum(6)
+        rw_mol.AddBond(terminal["anchor"], carbonyl["atom"], bond_type)
+        remove_idxs = [terminal["atom"]]
+
+    for idx in sorted(remove_idxs, reverse=True):
+        rw_mol.RemoveAtom(idx)
+    return _finalize_mol(rw_mol)
+
+
+def _connect_dummy_to_atom(mol, atom_idx, bond_type=Chem.BondType.SINGLE):
+    dummy_idxs = _dummy_indices(mol)
+    if len(dummy_idxs) != 1:
+        raise SmilesError("Expected exactly one constraint placeholder for cyclization")
+
+    details = _dummy_details(mol, dummy_idxs[0])
+    rw_mol = Chem.RWMol(mol)
+    if details["kind"] == "carbonyl":
+        rw_mol.GetAtomWithIdx(details["atom"]).SetAtomicNum(6)
+        rw_mol.AddBond(details["atom"], atom_idx, bond_type)
+    else:
+        rw_mol.AddBond(details["anchor"], atom_idx, bond_type)
+        rw_mol.RemoveAtom(details["atom"])
+    return _finalize_mol(rw_mol)
+
+
+def _connect_dummy_to_c_terminus(mol, bond_type=Chem.BondType.SINGLE):
+    dummy_idxs = _dummy_indices(mol)
+    if len(dummy_idxs) != 1:
+        raise SmilesError("Expected exactly one constraint placeholder for C-terminal cyclization")
+
+    details = _dummy_details(mol, dummy_idxs[0])
+    if details["kind"] != "terminal":
+        raise SmilesError("C-terminal cyclization requires a terminal placeholder")
+
+    carbonyl_idx, hydroxyl_idx = _find_terminal_carboxyl(mol)
+
+    rw_mol = Chem.RWMol(mol)
+    rw_mol.AddBond(details["anchor"], carbonyl_idx, bond_type)
+    for idx in sorted([details["atom"], hydroxyl_idx], reverse=True):
+        rw_mol.RemoveAtom(idx)
+    return _finalize_mol(rw_mol)
+
+
+def _cyclize_head_to_tail(mol):
+    n_term_idx = _find_n_terminal_amine(mol)
+    carbonyl_idx, hydroxyl_idx = _find_terminal_carboxyl(mol)
+
+    rw_mol = Chem.RWMol(mol)
+    rw_mol.AddBond(n_term_idx, carbonyl_idx, Chem.BondType.SINGLE)
+    rw_mol.RemoveAtom(hydroxyl_idx)
+    return _finalize_mol(rw_mol)
+
+
+def _build_peptide_mol(fragment_smiles):
+    fragments = list(fragment_smiles)
+    if not fragments:
+        raise SmilesError("Cannot build a peptide from an empty sequence")
+
+    def as_mol(fragment):
+        if isinstance(fragment, Chem.Mol):
+            return Chem.Mol(fragment)
+        return _mol_from_smiles(fragment, context="residue")
+
+    peptide = as_mol(fragments[0])
+    for fragment in fragments[1:]:
+        peptide = _run_peptide_bond_reaction(peptide, as_mol(fragment))
+    return peptide
+
+
+def _sequence_smiles(peptideseq, registry=None):
+    if registry is None:
+        return [return_smiles(resi) for resi in peptideseq]
+
+    tokens = parse_sequence_tokens(peptideseq, registry)
+    return [registry.resolve(token).smiles for token in tokens]
+
+
+def linear_peptide_smiles(peptideseq, registry=None):
+    """Build a linear peptide with RDKit SMARTS peptide-bond reactions."""
     if not peptideseq:
         return None
 
-    parts = ["O"]  # starting oxygen atom (matches your existing convention)
-
-    for resi in peptideseq:
-        frag = return_smiles(resi)  # full fragment, unmodified
-        # trim the LAST CHAR of the CURRENT chain, not the fragment
-        parts[-1] = parts[-1][:-1]
-        parts.append(frag)
-
-    return "".join(parts)
+    mol = _build_peptide_mol(_sequence_smiles(peptideseq, registry=registry))
+    return Chem.MolToSmiles(mol, isomericSmiles=True)
 
 
 def bond_counter(peptidesmiles):
@@ -422,47 +835,51 @@ def pep_positions(linpepseq):
 
 
 # Constrained peptide SMILES generator
-def constrained_peptide_smiles(peptideseq, pattern, next_bond_id=None):
+def constrained_peptide_smiles(peptideseq, pattern, next_bond_id=None, registry=None):
     """
-    Build constrained peptide SMILES.
-    Uses next_bond_id (int) for '*' placeholders when needed;
-    returns (seq, pattern, smiles).
+    Build constrained peptide SMILES with RDKit SMARTS assembly.
+
+    The next_bond_id parameter is retained for API compatibility but is no longer
+    used because cyclization is performed on molecular graphs rather than with
+    SMILES ring indices.
     """
+    if registry is not None:
+        return _registry_constrained_peptide_smiles(peptideseq, pattern, registry)
+
     valid_codes = {"C": "disulphide", "Z": "cterm", "N": "nterm", "E": "ester", "X": ""}
-    smiles = "O"
 
     if not pattern:
         return peptideseq, "", linear_peptide_smiles(peptideseq)
 
     if pattern[:2] == "HT":
-        smi = linear_peptide_smiles(peptideseq)
-        bid = (bond_counter(smi) + 1) if next_bond_id is None else next_bond_id
-        sbid = str(bid)
-        smi = smi[0] + sbid + smi[1:-5] + sbid + smi[-5:-1]
-        return peptideseq, pattern, smi
+        mol = _build_peptide_mol(return_smiles(resi) for resi in peptideseq)
+        mol = _cyclize_head_to_tail(mol)
+        return peptideseq, pattern, Chem.MolToSmiles(mol, isomericSmiles=True)
 
+    fragment_smiles = []
     for resi, code in zip(peptideseq, pattern[2:]):
-        smiles = smiles[:-1]
-        if code in valid_codes:
-            smiles += (
-                return_constrained_smiles(resi, valid_codes[code])
-                if valid_codes[code]
-                else return_smiles(resi)
-            )
-        elif code == "X":
-            smiles += return_smiles(resi)
-        else:
+        if code not in valid_codes:
             raise BondSpecError(f"{code} in pattern {pattern} not recognised")
+        constraint = valid_codes[code]
+        fragment_smiles.append(
+            return_constrained_smiles(resi, constraint) if constraint else return_smiles(resi)
+        )
+
+    mol = _build_peptide_mol(fragment_smiles)
 
     pf = pattern.replace("X", "")
     if pf in {"SCN", "SCE"}:
-        smiles = smiles[:-5] + "*(=O)"
+        mol = _connect_dummy_to_c_terminus(mol)
     elif pf == "SCZ":
-        smiles = "N*" + smiles[1:]
+        mol = _connect_dummy_to_atom(mol, _find_n_terminal_amine(mol))
+    elif pf.startswith("SC"):
+        mol = _connect_two_dummies(mol)
+    elif pf.startswith("SS"):
+        mol = _connect_two_dummies(mol)
+    else:
+        raise BondSpecError(f"{pattern} not recognised as valid bond_def")
 
-    bid = (bond_counter(smiles) + 1) if next_bond_id is None else next_bond_id
-    smiles = smiles.replace("*", str(bid))
-    return peptideseq, pattern, smiles
+    return peptideseq, pattern, Chem.MolToSmiles(mol, isomericSmiles=True)
 
 
 # generate structures from sequences with specified constraints
@@ -640,7 +1057,9 @@ def write_molecule(
         if return_struct:
             return block
         else:
-            with open(path.join(threedfolder, name + "." + type), "wb") as handle:
+            with open(
+                path.join(threedfolder, name + "." + type), "w", encoding="utf-8"
+            ) as handle:
                 handle.write(block)
     else:
         raise TypeError(f'"write" must be "draw" or "structure", got {write}')

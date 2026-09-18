@@ -4,10 +4,16 @@ import sys
 
 def run_tests():
     test_files = [
+        "tests/test_add_amino.py",
+        "tests/test_aminoacids.py",
         "tests/test_chemMods.py",
         "tests/test_chemProps.py",
         "tests/test_fasta2smi.py",
         "tests/test_genPeps.py",
+        "tests/test_import_lipids.py",
+        "tests/test_modifiers.py",
+        "tests/test_registry.py",
+        "tests/test_smilesgen.py",
         "tests/test_synthRules.py",
         # Add more test files as needed
     ]

@@ -10,6 +10,13 @@ Uses p2smi.utilities.smilesgen.
 
 import argparse
 import p2smi.utilities.smilesgen as smilesgen
+from p2smi.modifiers import (
+    ModificationError,
+    ModifierRegistry,
+    build_modified_peptide,
+    builtin_modifier_registry,
+)
+from p2smi.registry import RegistryError, ResidueRegistry, parse_sequence_tokens
 
 all_aminos = smilesgen.all_aminos
 LETTER2NAME = smilesgen.LETTER2NAME
@@ -38,21 +45,26 @@ def parse_fasta(fasta_file):
             yield sequence, constraint
 
 
-def constraint_resolver(sequence, constraint):
+def constraint_resolver(sequence, constraint, registry=None):
     # Resolve constraints by checking known patterns or fallback attempts.
     # Return (sequence, constraint) or fallback to linear if none apply.
-    constraint_functions = {
+    functions = {
         "SS": smilesgen.can_ssbond,
         "HT": smilesgen.can_htbond,
         "SCNT": smilesgen.can_scntbond,
         "SCCT": smilesgen.can_scctbond,
         "SCSC": smilesgen.can_scscbond,
     }
-    valid_constraints = smilesgen.what_constraints(sequence)
+    constraint_functions = {
+        key: (
+            (lambda seq, func=func: func(seq))
+            if registry is None
+            else (lambda seq, func=func: func(seq, registry=registry))
+        )
+        for key, func in functions.items()
+    }
 
-    if constraint.upper() in valid_constraints:
-        return (sequence, constraint)
-    elif constraint.upper() in constraint_functions:
+    if constraint.upper() in constraint_functions:
         result = constraint_functions[constraint.upper()](sequence)
         return result or (sequence, "")
     elif constraint.upper() == "SC":
@@ -87,16 +99,42 @@ def has_capability(aa, key):
     return bool(val)
 
 
-def validate_constraint_pattern(peptideseq, pattern):
+def validate_constraint_pattern(peptideseq, pattern, registry=None):
     """
     Validate that a user-supplied constraint pattern matches both
     the peptide chemistry (using all_aminos) and the positional mask.
 
-    Uses only 'N' for nucleophilic sidechains (no 'E').
+    Accepts 'N'/'E' sidechains that link to the peptide C-terminus and 'Z'
+    sidechains that link to the peptide N-terminus.
     Returns (is_valid, message) instead of raising exceptions.
     """
 
-    seq = "".join(peptideseq) if not isinstance(peptideseq, str) else peptideseq
+    if registry is not None:
+        try:
+            seq = parse_sequence_tokens(peptideseq, registry)
+            residues = [registry.resolve(token) for token in seq]
+            capabilities = []
+            for residue in residues:
+                mol = smilesgen._mol_from_smiles(
+                    residue.smiles, context=f"residue {residue.id}"
+                )
+                sites = smilesgen._reactive_site_indices(mol)
+                capabilities.append(
+                    {kind for kind, indices in sites.items() if len(indices) == 1}
+                )
+        except (RegistryError, smilesgen.SmilesError) as exc:
+            return False, str(exc)
+    else:
+        seq = "".join(peptideseq) if not isinstance(peptideseq, str) else peptideseq
+        try:
+            legacy_residues = [all_aminos[LETTER2NAME[r]] for r in seq]
+        except KeyError as exc:
+            return False, f"Undefined residue {exc.args[0]} in sequence."
+        residues = legacy_residues
+        capabilities = [
+            {key for key in ("disulphide", "nterm", "ester", "cterm") if has_capability(aa, key)}
+            for aa in residues
+        ]
     tag = pattern[:2].upper()
     mask = pattern[2:]
 
@@ -109,61 +147,58 @@ def validate_constraint_pattern(peptideseq, pattern):
             f"Mask length ({len(mask)}) does not match sequence length ({len(seq)}).",
         )
 
-    try:
-        residues = [all_aminos[LETTER2NAME[r]] for r in seq]
-    except KeyError as e:
-        return False, f"Undefined residue {e.args[0]} in sequence."
-
     # -----------------------------
     # Validate per-position codes
     # -----------------------------
     for i, code in enumerate(mask):
         if code == "X":
             continue
-        aa = residues[i]
-        if code == "C" and not has_capability(aa, "disulphide"):
+        residue_capabilities = capabilities[i]
+        if code == "C" and "disulphide" not in residue_capabilities:
             return False, f"Position {i}: '{seq[i]}' cannot form disulfide ('C')."
-        if code == "N" and not has_capability(aa, "nterm"):
+        if code == "N" and "nterm" not in residue_capabilities:
             return False, f"Position {i}: '{seq[i]}' lacks nterm capability ('N')."
-        if code == "Z" and not has_capability(aa, "cterm"):
+        if code == "E" and "ester" not in residue_capabilities:
+            return False, f"Position {i}: '{seq[i]}' lacks ester capability ('E')."
+        if code == "Z" and "cterm" not in residue_capabilities:
             return False, f"Position {i}: '{seq[i]}' lacks cterm capability ('Z')."
+        if code not in {"X", "C", "N", "E", "Z"}:
+            return False, f"Position {i}: unknown constraint code '{code}'."
 
     # -----------------------------
     # Constraint-type validation
     # -----------------------------
     if tag == "SS":
-        if sum(has_capability(aa, "disulphide") for aa in residues) < 2:
-            return False, "SS constraint requires ≥2 disulphide-capable residues."
+        if mask.count("C") != 2 or set(mask) - {"X", "C"}:
+            return False, "SS constraint mask must select exactly two disulphide sites."
         return True, "Valid SS constraint."
 
     elif tag == "HT":
+        if mask:
+            return False, "HT constraint does not accept a positional mask."
         if len(residues) < 2:
             return False, "HT requires at least two residues."
         return True, "Valid HT constraint."
 
     elif tag == "SC":
-        codes = set(mask)
-        if "N" in codes and "Z" in codes:
+        codes = set(mask) - {"X"}
+        if mask.count("Z") > 1 or mask.count("N") + mask.count("E") > 1:
+            return False, "SC constraint must select at most one acid and one donor site."
+        if ({"N", "E"} & codes) and "Z" in codes:
             subtype = "SCSC"  # sidechain–sidechain
-        elif "N" in codes:
-            subtype = "SCNT"  # sidechain–N-terminus (now covers previous 'E')
-        elif "Z" in codes:
+        elif {"N", "E"} & codes:
             subtype = "SCCT"  # sidechain–C-terminus
+        elif "Z" in codes:
+            subtype = "SCNT"  # sidechain–N-terminus
         else:
             return False, f"Unrecognized SC pattern: {pattern}"
 
-        # subtype-specific residue chemistry
+        # subtype-specific residue chemistry beyond the per-position checks above
         if subtype == "SCSC":
-            n_like = any(has_capability(aa, "nterm") for aa in residues)
-            c_like = any(has_capability(aa, "cterm") for aa in residues)
+            n_like = any(code in {"N", "E"} for code in mask)
+            c_like = "Z" in codes
             if not (n_like and c_like):
-                return False, "SCSC requires one nterm=True and one cterm=True residue."
-        elif subtype == "SCNT":
-            if not any(has_capability(aa, "nterm") for aa in residues):
-                return False, "SCNT requires at least one nterm=True residue."
-        elif subtype == "SCCT":
-            if not any(has_capability(aa, "cterm") for aa in residues):
-                return False, "SCCT requires at least one cterm=True residue."
+                return False, "SCSC requires one N/E site and one Z site in the mask."
 
         return True, f"Valid {subtype} constraint."
 
@@ -178,43 +213,95 @@ def normalize_constraint(result):
     return result
 
 
-def process_constraints(fasta_file):
+def process_constraints(fasta_file, registry=None):
     return (
         (
             seq,
             (
                 constr
                 if "X" in constr
-                else normalize_constraint(constraint_resolver(seq, constr))
+                else normalize_constraint(constraint_resolver(seq, constr, registry=registry))
             ),
         )
         for seq, constr in parse_fasta(fasta_file)
     )
 
 
-def generate_smiles_strings(input_fasta, out_file, verbose=False):
-    resolved_sequences = list(process_constraints(input_fasta))  # <-- materialize
+def generate_smiles_strings(
+    input_fasta,
+    out_file,
+    verbose=False,
+    registry_file=None,
+    modifier_registry_file=None,
+    recipe_id=None,
+    on_error="error",
+):
+    registry = None
+    if registry_file is not None:
+        registry = ResidueRegistry.from_legacy_mapping(all_aminos).merge(
+            ResidueRegistry.read_json(registry_file)
+        )
+    resolved_sequences = list(process_constraints(input_fasta, registry=registry))
+    valid_sequences = []
 
     for seq, constr in resolved_sequences:
-        is_valid, message = validate_constraint_pattern(seq, constr)
+        is_valid, message = validate_constraint_pattern(seq, constr, registry=registry)
         if verbose:
             print(f"[DEBUG] {seq=} {constr=} -> {is_valid=} {message=}")
         if not is_valid:
             print(f"Warning: {message}")
             continue
+        valid_sequences.append((seq, constr))
 
+    if recipe_id:
+        residue_registry = registry or ResidueRegistry.from_legacy_mapping(all_aminos)
+        modifier_registry = builtin_modifier_registry()
+        if modifier_registry_file:
+            modifier_registry = ModifierRegistry.read_json(
+                modifier_registry_file, base=modifier_registry
+            )
+        try:
+            recipe = modifier_registry.recipes[recipe_id]
+        except KeyError as exc:
+            raise ModificationError(f"Unknown recipe: {recipe_id}") from exc
+
+        def modified_entries():
+            for seq, constr in valid_sequences:
+                try:
+                    product, applied = build_modified_peptide(
+                        seq,
+                        constr,
+                        residue_registry,
+                        modifier_registry,
+                        recipe,
+                    )
+                except Exception as exc:
+                    if on_error == "error":
+                        raise
+                    print(f"Warning: skipped {seq}: {exc}")
+                    continue
+                bond_label = f"{constr or 'linear'}[{','.join(applied)}]"
+                yield seq, bond_label, product
+
+        entries = modified_entries()
+    else:
+        entries = (
+            (
+                smilesgen.constrained_peptide_smiles(seq, constr)
+                if registry is None
+                else smilesgen.constrained_peptide_smiles(seq, constr, registry=registry)
+            )
+            for seq, constr in valid_sequences
+        )
     smilesgen.write_library(
-        (
-            smilesgen.constrained_peptide_smiles(seq, constr)
-            for seq, constr in resolved_sequences
-        ),
+        entries,
         out_file,
         write="text",
         write_to_file=True,
     )
 
 
-def main():
+def main(argv=None):
     # CLI entry point: takes FASTA file input, output file path, and generates structures
     parser = argparse.ArgumentParser(
         description=(
@@ -229,13 +316,14 @@ def main():
             "  To define cyclization residues manually, encode pattern using:\n"
             "    X    - Any residue\n"
             "    C    - Cysteine (for disulfide bonds)\n"
-            "    N    - Residue bonded to N-terminal (e.g., K, S, T, Y, C)\n"
-            "    Z    - Residue bonded to C-terminal (e.g., D, E, K, R)\n\n"
+            "    N    - Nucleophilic sidechain bonded to C-terminal (e.g., K, S, T, Y, C)\n"
+            "    E    - Ester sidechain bonded to C-terminal (optional advanced form)\n"
+            "    Z    - Carboxyl sidechain bonded to N-terminal (e.g., D, E)\n\n"
             "  Example manual CONSTRAINT:\n"
             "    SS   - SSXXXXCXXXCX (Disulfide bond)\n"
             "    SCSC - SCXXNXXXXZ (Sidechain–sidechain linkage)\n"
-            "    SCNT - SCXXNXXXXXX (Sidechain–N-terminus linkage)\n"
-            "    SCCT - SCXXXXXZXXX (Sidechain–C-terminus linkage)\n\n"
+            "    SCNT - SCXXXXXZXXX (Sidechain–N-terminus linkage)\n"
+            "    SCCT - SCXXNXXXXXX (Sidechain–C-terminus linkage)\n\n"
             "Residue capabilities are validated using the amino acid database"
             " in p2smi.utilities.smilesgen.\n"
             "If an invalid or incompatible pattern is detected, a warning is"
@@ -251,9 +339,35 @@ def main():
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose output."
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--registry-file",
+        help="Optional v2 JSON residue registry for comma-delimited sequence IDs.",
+    )
+    parser.add_argument(
+        "--recipe",
+        help="Explicit modification recipe ID to apply during sequence assembly.",
+    )
+    parser.add_argument(
+        "--modifier-registry",
+        help="JSON modifier definitions and recipes to overlay on built-ins.",
+    )
+    parser.add_argument(
+        "--on-error",
+        choices=("error", "skip"),
+        default="error",
+        help="Recipe-mode behavior for incompatible modification sites.",
+    )
+    args = parser.parse_args(argv)
 
-    generate_smiles_strings(args.input_fasta, args.out_file, args.verbose)
+    generate_smiles_strings(
+        args.input_fasta,
+        args.out_file,
+        args.verbose,
+        registry_file=args.registry_file,
+        modifier_registry_file=args.modifier_registry,
+        recipe_id=args.recipe,
+        on_error=args.on_error,
+    )
 
 
 if __name__ == "__main__":

@@ -1,9 +1,13 @@
+import pytest
+
 from p2smi.genPeps import (
     CONSTRAINTS,
     build_sequence,
     calculate_amino_acid_counts,
     generate_sequences,
     get_amino_acid_lists,
+    parse_constraints_option,
+    validate_generation_args,
 )
 
 
@@ -40,3 +44,22 @@ def test_CONSTRAINTS():
         isinstance(constraint, str) for constraint in CONSTRAINTS
     )  # Check if all constraints are strings
     assert len(CONSTRAINTS) > 0  # Ensure there are some constraints defined
+
+
+def test_parse_constraints_option_supports_csv_and_all():
+    assert parse_constraints_option("HT,SCSC") == ["HT", "SCSC"]
+    assert parse_constraints_option("all") == CONSTRAINTS
+    assert parse_constraints_option("none") == []
+
+
+def test_parse_constraints_option_rejects_unknown_values():
+    with pytest.raises(ValueError):
+        parse_constraints_option("HT,UNKNOWN")
+
+
+def test_validate_generation_args_rejects_invalid_ranges():
+    with pytest.raises(ValueError):
+        validate_generation_args(10, 12, 8, 0.2, 0.2)
+
+    with pytest.raises(ValueError):
+        validate_generation_args(10, 8, 12, 1.2, 0.2)

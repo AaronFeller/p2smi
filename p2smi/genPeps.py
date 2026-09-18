@@ -75,6 +75,38 @@ def get_amino_acid_lists():
 CONSTRAINTS = ["SS", "HT", "SCNT", "SCCT", "SCSC"]  # Supported constraint types
 
 
+def validate_generation_args(
+    num_sequences, min_length, max_length, noncanonical_percent, dextro_percent
+):
+    if num_sequences < 0:
+        raise ValueError("Number of sequences must be non-negative")
+    if min_length < 0 or max_length < 0:
+        raise ValueError("Sequence lengths must be non-negative")
+    if min_length > max_length:
+        raise ValueError("Minimum length cannot exceed maximum length")
+    if not 0 <= noncanonical_percent <= 1:
+        raise ValueError("Noncanonical fraction must be between 0 and 1")
+    if not 0 <= dextro_percent <= 1:
+        raise ValueError("D-stereochemistry fraction must be between 0 and 1")
+
+
+def parse_constraints_option(option):
+    if option is None:
+        return []
+
+    normalized = option.strip()
+    if not normalized or normalized.lower() == "none":
+        return []
+    if normalized.lower() == "all":
+        return CONSTRAINTS.copy()
+
+    constraints = [item.strip().upper() for item in normalized.split(",") if item.strip()]
+    invalid = [constraint for constraint in constraints if constraint not in CONSTRAINTS]
+    if invalid:
+        raise ValueError(f"Unsupported cyclization constraints: {', '.join(invalid)}")
+    return constraints
+
+
 def calculate_amino_acid_counts(seq_len, noncanonical_percent, dextro_percent):
     # Calculate counts of each category (canonical/noncanonical, L-/D-form)
     dn_nc = round(seq_len * dextro_percent * noncanonical_percent)
@@ -110,6 +142,17 @@ def generate_sequences(
     constraints,
 ):
     # Generate a dictionary of random sequences with optional constraints
+    validate_generation_args(
+        num_sequences,
+        min_length,
+        max_length,
+        noncanonical_percent,
+        dextro_percent,
+    )
+    invalid = [constraint for constraint in constraints if constraint not in CONSTRAINTS]
+    if invalid:
+        raise ValueError(f"Unsupported cyclization constraints: {', '.join(invalid)}")
+
     amino_lists = get_amino_acid_lists()
 
     def make_sequence(i):
@@ -155,13 +198,17 @@ def main():
     parser.add_argument("-o", "--outfile", type=str, default=None)
     args = parser.parse_args()
 
-    # if constraints is "all", use all supported constraints
-    if args.cyclization_constraints == "all":
-        constraints = ["SS", "HT", "SCNT", "SCCT", "SCSC"]
-    elif args.cyclization_constraints is None:
-        constraints = []
-    else:
-        constraints = [args.cyclization_constraints]
+    try:
+        constraints = parse_constraints_option(args.cyclization_constraints)
+        validate_generation_args(
+            args.num,
+            args.min_length,
+            args.max_length,
+            args.noncanonical,
+            args.dextro,
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
 
     sequences = generate_sequences(
         args.num,

@@ -13,76 +13,90 @@ Speedups:
 import argparse
 import math
 import random
-import re
+from pathlib import Path
 from rdkit import Chem
 from rdkit import RDLogger
 
+from p2smi.modifiers import (
+    ModificationError,
+    ModifierRegistry,
+    SiteSelector,
+    apply_modifier,
+    apply_recipe,
+    builtin_modifier_registry,
+)
+
 RDLogger.DisableLog("rdApp.*")  # quiet RDKit in batch
 
-# --- Precompiled patterns ---
-# Amide N to N-methylate: C(=O)N[C@   (insert "(C)" after the 'N')
-_AMIDE_N_PATTERN = re.compile(r"C\(=O\)N\[C@")
-# PEG insertion anchor: ... "CN)"  (insert PEG after 'CN')
-_PEG_ANCHOR_PATTERN = re.compile(r"CN\)")
+_AMIDE_N_PATTERN = Chem.MolFromSmarts(
+    "[N;H1;X3;$([N]-[C](=O));$([N]-[C]-[C](=O))]"
+)
+_PEGYLATION_N_PATTERN = Chem.MolFromSmarts("[N;H1,H2;!$([N]-[C](=O))]")
 
 
 def is_valid_smiles(smiles: str) -> bool:
     return Chem.MolFromSmiles(smiles) is not None
 
 
-def _insert_many(base: str, inserts):
-    """
-    Insert multiple (idx, text) into base in a single pass.
-    `inserts` must be sorted by idx ascending.
-    """
-    if not inserts:
-        return base
-    out = []
-    prev = 0
-    for idx, txt in inserts:
-        out.append(base[prev:idx])
-        out.append(txt)
-        prev = idx
-    out.append(base[prev:])
-    return "".join(out)
+def _matching_atom_indices(mol, pattern):
+    return sorted({match[0] for match in mol.GetSubstructMatches(pattern)})
+
+
+def _pegylation_anchor_indices(mol):
+    return _matching_atom_indices(mol, _PEGYLATION_N_PATTERN)
 
 
 def add_n_methylation(sequence: str, methylation_residue_fraction: float):
     """
-    Insert '(C)' after the amide N for a random subset of matches.
-    We compute insertion indices once and build result in one pass.
+    Add methyl groups to peptide amide nitrogens selected via SMARTS matching.
     """
     if methylation_residue_fraction <= 0:
         return sequence, 0
 
-    # Find starts of the pattern; insert after the 'N' (offset +6)
-    # 'C(=O)N' is 6 chars before the '['
-    match_starts = [m.start() for m in _AMIDE_N_PATTERN.finditer(sequence)]
-    if not match_starts:
+    mol = Chem.MolFromSmiles(sequence)
+    if mol is None:
         return sequence, 0
 
-    k = math.ceil(len(match_starts) * methylation_residue_fraction)
-    chosen = random.sample(match_starts, min(k, len(match_starts)))
-    # Build list of (absolute) insertion points
-    inserts = sorted(((pos + 6, "(C)") for pos in chosen), key=lambda x: x[0])
+    match_indices = _matching_atom_indices(mol, _AMIDE_N_PATTERN)
+    if not match_indices:
+        return sequence, 0
 
-    return _insert_many(sequence, inserts), len(chosen)
+    k = math.ceil(len(match_indices) * methylation_residue_fraction)
+    chosen = random.sample(match_indices, min(k, len(match_indices)))
+
+    product = mol
+    definition = builtin_modifier_registry().modifiers["n_methyl"]
+    for atom_idx in chosen:
+        product = apply_modifier(
+            product,
+            definition,
+            SiteSelector(atom_index=atom_idx),
+        )
+
+    return Chem.MolToSmiles(product, isomericSmiles=True), len(chosen)
 
 
 def add_pegylation(sequence: str):
     """
-    Insert a random-length PEG chain after a random 'CN)' anchor.
-    PEG = O(CCO){1..4}C  (length picked uniformly)
+    Acylate a random free amine with an mPEG chain containing 1-4 EO units.
     """
-    anchors = [m.start() for m in _PEG_ANCHOR_PATTERN.finditer(sequence)]
+    mol = Chem.MolFromSmiles(sequence)
+    if mol is None:
+        return sequence, None
+
+    anchors = _pegylation_anchor_indices(mol)
     if not anchors:
         return sequence, None
 
-    pos = random.choice(anchors)
-    peg = "O" + "CCO" * random.randint(1, 4) + "C"
-    # Insert right after 'CN' (i.e., after pos+2)
-    insert_idx = pos + 2
-    return _insert_many(sequence, [(insert_idx, peg)]), peg
+    anchor_idx = random.choice(anchors)
+    peg_units = random.randint(1, 4)
+    product = apply_modifier(
+        mol,
+        builtin_modifier_registry().modifiers["mpeg_acetyl"],
+        SiteSelector(atom_index=anchor_idx),
+        {"units": peg_units},
+    )
+    return Chem.MolToSmiles(product, isomericSmiles=True), "CCO" * peg_units
 
 
 def parse_input_lines(fp):
@@ -157,6 +171,38 @@ def process_sequences(fp, nmeth_rate: float, peg_rate: float, nmeth_residues: fl
             yield f"{mod_seq}" if not mods else f"{mod_str}: {mod_seq}"
 
 
+def load_modifier_registry(registry_file=None):
+    registry = builtin_modifier_registry()
+    if registry_file is not None:
+        registry = ModifierRegistry.read_json(Path(registry_file), base=registry)
+    return registry
+
+
+def process_recipe_sequences(fp, recipe_id, registry, on_error="error"):
+    if on_error not in {"error", "skip"}:
+        raise ModificationError("on_error must be 'error' or 'skip'")
+    try:
+        recipe = registry.recipes[recipe_id]
+    except KeyError as exc:
+        raise ModificationError(f"Unknown recipe: {recipe_id}") from exc
+
+    for header, sequence in parse_input_lines(fp):
+        if sequence is None:
+            if on_error == "error":
+                raise ModificationError(f"Malformed input line: {header}")
+            yield f"{header} [Skipped malformed line]"
+            continue
+        try:
+            product, applied = apply_recipe(sequence, recipe, registry)
+        except ModificationError as exc:
+            if on_error == "error":
+                raise
+            yield f"{header or '[Unlabelled]'} [Skipped: {exc}]"
+            continue
+        annotation = f"[{' - '.join(applied)}]"
+        yield f"{header}{annotation}: {product}" if header else f"{annotation}: {product}"
+
+
 def process_file(
     input_file: str,
     output_file: str,
@@ -180,9 +226,20 @@ def process_file(
                 print(line)
 
 
-def main():
+def process_recipe_file(input_file, output_file, recipe_id, registry, on_error="error"):
+    with open(input_file, "r") as infile:
+        lines = process_recipe_sequences(infile, recipe_id, registry, on_error=on_error)
+        if output_file:
+            with open(output_file, "w") as outfile:
+                outfile.write("\n".join(lines))
+        else:
+            for line in lines:
+                print(line)
+
+
+def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Modify peptide SMILES with PEGylation and N-methylation."
+        description="Modify peptide SMILES randomly or with explicit recipes."
     )
     parser.add_argument("-i", "--input_file", required=True, help="Input file path.")
     parser.add_argument(
@@ -208,7 +265,32 @@ def main():
         default=0.2,
         help="Fraction of amide sites per sequence to N-methylate (0-1).",
     )
-    args = parser.parse_args()
+    parser.add_argument("--recipe", help="Deterministic recipe ID.")
+    parser.add_argument(
+        "--modifier-registry",
+        type=Path,
+        help="JSON modifier definitions and recipes to overlay on built-ins.",
+    )
+    parser.add_argument(
+        "--on-error",
+        choices=("error", "skip"),
+        default="error",
+        help="Recipe-mode behavior for malformed input or incompatible sites.",
+    )
+    args = parser.parse_args(argv)
+
+    if args.recipe:
+        try:
+            process_recipe_file(
+                args.input_file,
+                args.output_file,
+                args.recipe,
+                load_modifier_registry(args.modifier_registry),
+                on_error=args.on_error,
+            )
+        except ModificationError as exc:
+            parser.error(str(exc))
+        return
 
     process_file(
         args.input_file,

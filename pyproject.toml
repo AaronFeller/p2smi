@@ -4,17 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "p2smi"
-version = "1.1.1"
+version = "2.0.0"
 description = "A toolkit enabling SMILES generation and property analysis for noncanonical and cyclized peptides."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name="Aaron Feller", email="aaronleefeller@gmail.com" }]
 dependencies = ["rdkit", "numpy"]
 requires-python = ">=3.9"
+classifiers = [
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+]
 
 [project.scripts]
 generate-peptides = "p2smi.genPeps:main"
 fasta2smi = "p2smi.fasta2smi:main"
+add-amino-acid = "p2smi.add_amino:main"
+import-lipid-modifiers = "p2smi.import_lipids:main"
 modify-smiles = "p2smi.chemMods:main"
 smiles-props = "p2smi.chemProps:main"
 synthesis-check = "p2smi.synthRules:main"
@@ -25,3 +31,6 @@ dev = ["pytest",
         "flake8",
         "pytest-cov",
         "pre-commit"]
+
+[tool.setuptools.packages.find]
+include = ["p2smi*"]
