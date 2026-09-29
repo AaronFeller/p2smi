@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 authors = [{ name="Aaron Feller", email="aaronleefeller@gmail.com" }]
 dependencies = ["rdkit", "numpy"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
@@ -36,5 +36,5 @@ dev = ["pytest",
 include = ["p2smi*"]
 
 [tool.black]
-target-version = ["py39"]
+target-version = ["py310"]
 line-length = 88
